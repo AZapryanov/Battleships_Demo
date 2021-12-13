@@ -25,6 +25,11 @@ class MainActivity : AppCompatActivity() {
     fun sth3() {
         println("Test3 branch 123")
     }
+
+    fun pullRequest1(): Int{
+        return 7
+    }
+    
     fun oburkanSum(){
         println("basi mamata")
     }
