@@ -22,4 +22,8 @@ class MainActivity : AppCompatActivity() {
     fun sth(){
         println("Kris branch 123")
     }
+
+    fun oburkanSum(){
+        println("basi mamata")
+    }
 }
