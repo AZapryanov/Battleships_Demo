@@ -37,4 +37,8 @@ class MainActivity : AppCompatActivity() {
     fun pullRequest(): Int{
         return 3
     }
+
+    fun neshDrugo(): Int{
+        return 15
+    }
 }
