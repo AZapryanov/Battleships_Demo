@@ -28,4 +28,8 @@ class MainActivity : AppCompatActivity() {
     fun oburkanSum(){
         println("basi mamata")
     }
+
+    fun pullRequest(): Int{
+        return 3
+    }
 }
