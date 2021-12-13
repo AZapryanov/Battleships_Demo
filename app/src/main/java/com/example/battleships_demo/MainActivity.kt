@@ -18,5 +18,7 @@ class MainActivity : AppCompatActivity() {
 
     fun sth1(){
         println("AZ branch change")
+    fun sth(){
+        println("Kris branch 123")
     }
 }
