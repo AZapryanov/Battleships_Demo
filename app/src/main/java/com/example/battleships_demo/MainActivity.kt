@@ -15,4 +15,9 @@ class MainActivity : AppCompatActivity() {
     fun test(test1: String): Int {
         return test1.length
     }
+
+    fun test2(test2: String): Int {
+        return test2.length
+    }
+
 }
