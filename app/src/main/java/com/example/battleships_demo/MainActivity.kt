@@ -17,6 +17,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun sth(){
-        println("someth")
+        println("something")
     }
 }
