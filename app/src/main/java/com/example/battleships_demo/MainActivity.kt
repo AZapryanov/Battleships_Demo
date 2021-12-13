@@ -7,38 +7,5 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        test("Hello World!")
-
-    }
-
-    fun test(test1: String): Int {
-        return test1.length
-    }
-
-    fun sth1() {
-        println("AZ branch change")
-    }
-    fun sth(){
-        println("Kris branch 123")
-    }
-    fun sth3() {
-        println("Test3 branch 123")
-    }
-
-    fun pullRequest1(): Int{
-        return 7
-    }
-    
-    fun oburkanSum(){
-        println("basi mamata")
-    }
-
-    fun pullRequest(): Int{
-        return 3
-    }
-
-    fun neshDrugo(): Int{
-        return 15
     }
 }
