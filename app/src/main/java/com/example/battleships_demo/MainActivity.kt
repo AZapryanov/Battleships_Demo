@@ -15,8 +15,4 @@ class MainActivity : AppCompatActivity() {
     fun test(test1: String): Int {
         return test1.length
     }
-
-    fun sth(){
-        println("thing")
-    }
 }
