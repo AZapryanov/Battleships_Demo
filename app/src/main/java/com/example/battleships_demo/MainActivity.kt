@@ -16,8 +16,7 @@ class MainActivity : AppCompatActivity() {
         return test1.length
     }
 
-    fun test2(test2: String): Int {
-        return test2.length
+    fun sth(){
+        println("Kris branch change")
     }
-
 }
