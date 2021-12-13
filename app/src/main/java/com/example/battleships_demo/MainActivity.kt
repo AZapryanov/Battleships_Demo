@@ -22,9 +22,9 @@ class MainActivity : AppCompatActivity() {
     fun sth(){
         println("Kris branch 123")
     }
-    fun sth3(){
+    fun sth3() {
         println("Test3 branch 123")
-
+    }
     fun oburkanSum(){
         println("basi mamata")
     }
