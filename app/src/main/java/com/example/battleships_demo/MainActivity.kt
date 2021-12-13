@@ -16,8 +16,9 @@ class MainActivity : AppCompatActivity() {
         return test1.length
     }
 
-    fun sth1(){
+    fun sth1() {
         println("AZ branch change")
+    }
     fun sth(){
         println("Kris branch 123")
     }
