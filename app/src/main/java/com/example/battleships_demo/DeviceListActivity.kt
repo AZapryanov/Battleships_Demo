@@ -13,6 +13,7 @@ class DeviceListActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "DeviceListActivity"
+        private const val EXTRA_DEVICE_NAME = "com.example.battleships_demo.device_name"
         private const val EXTRA_DEVICE_ADDRESS = "com.example.battleships_demo.device_address"
     }
 
@@ -36,10 +37,12 @@ class DeviceListActivity : AppCompatActivity() {
         OnItemClickListener { av, v, arg2, arg3 ->
 
             val info = (v as TextView).text.toString()
+            val name = info.substring(0, info.length - 18)
             val address = info.substring(info.length - 17)
 
             // Create the result Intent and include the MAC address
             val intent = Intent()
+            intent.putExtra(EXTRA_DEVICE_NAME, name)
             intent.putExtra(EXTRA_DEVICE_ADDRESS, address)
 
             // Set result and finish this Activity
