@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Battleships_Demo</string>
+    <string name="title_paired_devices">Paired devices</string>
 </resources>
