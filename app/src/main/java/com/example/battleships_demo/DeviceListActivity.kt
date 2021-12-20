@@ -22,6 +22,7 @@ class DeviceListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_device_list)
 
+        // In case the user backs out
         setResult(RESULT_CANCELED)
 
         val pairedDevicesArrayAdapter = ArrayAdapter<String>(
