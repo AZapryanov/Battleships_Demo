@@ -10,4 +10,5 @@ object Constants {
     const val PHASE_MARK_ATTACK = "doAttack"
     const val PHASE_RECEIVE_ATTACKS = "receiveAttack"
     const val PHASE_TOUCH_INPUTS_LOCKED = "lock"
+    const val NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME = 17
 }

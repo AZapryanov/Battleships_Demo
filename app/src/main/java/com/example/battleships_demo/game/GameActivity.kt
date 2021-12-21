@@ -2,6 +2,7 @@ package com.example.battleships_demo.game
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.example.battleships_demo.R
 import com.example.battleships_demo.common.Constants
@@ -48,39 +49,34 @@ class GameActivity : AppCompatActivity() {
             cvMyAttacks.setPhase(Constants.PHASE_MARK_ATTACK)
 
             //My ships are updated based on the received attack coordinated from the opponent
-            val updatedCvMyShips = updateCvMyShips()
-            cvMyShips.setBoardState(updatedCvMyShips)
+            val updatedMyShips = updateMyShips()
+            cvMyShips.setBoardState(updatedMyShips)
 
+            val isEndgame = checkIfGameHasEnded(cvMyShips.getBoardState())
+            if (isEndgame) {
+                Toast.makeText(this, "GG, You have lost!", Toast.LENGTH_SHORT).show()
+            }
 
             buttonEndTurn.setOnClickListener {
-                val myAttackCoordinates = findMyAttackCoordinatesThisTurn()
+                val myAttackCoordinates = cvMyAttacks.getLastTouchInput()
 
                 //My attack board is updated based on my attack coordinates and whether is a hit or miss
-                val updatedCvMyAttacks = updateCvMyAttacks(myAttackCoordinates)
-                cvMyAttacks.setBoardState(updatedCvMyAttacks)
+                val updatedMyAttacks = updateMyAttacks(myAttackCoordinates)
+                cvMyAttacks.setBoardState(updatedMyAttacks)
                 myAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
+
+                val isEndgame = checkIfGameHasEnded(cvMyAttacks.getBoardState())
+                if (isEndgame) {
+                    //Send my attack coordinates to opponent so that his board can update to the final state and also register Endgame
+                    Toast.makeText(this, "GG, You have won!", Toast.LENGTH_SHORT).show()
+                }
 
                 //Send my attack coordinates as array to other player through BT
             }
         })
     }
 
-    private fun findMyAttackCoordinatesThisTurn(): Array<Int> {
-        val attackCoordinates = Array(2) { 0 }
-        val myAttacksCurrentPositions = cvMyAttacks.getBoardState()
-        for (i in myAttacksPositionsFromPreviousRound.indices) {
-            for (j in myAttacksPositionsFromPreviousRound.indices) {
-                if (myAttacksCurrentPositions[i][j] != myAttacksPositionsFromPreviousRound[i][j]) {
-                    attackCoordinates[0] = i
-                    attackCoordinates[1] = j
-                    return attackCoordinates
-                }
-            }
-        }
-        return attackCoordinates
-    }
-
-    private fun updateCvMyAttacks(myAttackCoordinates: Array<Int>): Array<Array<Int>> {
+    private fun updateMyAttacks(myAttackCoordinates: Array<Int>): Array<Array<Int>> {
         val updatedCvMyAttacks = myAttacksPositionsFromPreviousRound
         val currentAttackX = myAttackCoordinates[0]
         val currentAttackY = myAttackCoordinates[1]
@@ -95,7 +91,7 @@ class GameActivity : AppCompatActivity() {
         return updatedCvMyAttacks
     }
 
-    private fun updateCvMyShips(): Array<Array<Int>> {
+    private fun updateMyShips(): Array<Array<Int>> {
         val updatedCvMyShips = myShipsPositionsFromPreviousRound
         val currentAttackX = opponentAttackCoordinates[0]
         val currentAttackY = opponentAttackCoordinates[1]
@@ -107,6 +103,18 @@ class GameActivity : AppCompatActivity() {
             updatedCvMyShips[currentAttackX][currentAttackY] = 3
         }
         return updatedCvMyShips
+    }
+
+    private fun checkIfGameHasEnded(shipsBoard: Array<Array<Int>>): Boolean {
+        var counter = 0
+        for (i in shipsBoard.indices) {
+            for (j in shipsBoard.indices) {
+                if (shipsBoard[i][j] == 3) {
+                    counter++
+                }
+            }
+        }
+        return counter >= Constants.NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME
     }
 
     private fun transformStringToIntMatrix(input: String?): Array<Array<Int>> {
