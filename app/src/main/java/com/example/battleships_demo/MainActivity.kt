@@ -1,6 +1,5 @@
 package com.example.battleships_demo
 
-import android.bluetooth.BluetoothClass
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle

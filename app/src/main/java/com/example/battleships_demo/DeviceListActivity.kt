@@ -1,6 +1,8 @@
 package com.example.battleships_demo
 
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -13,8 +15,8 @@ class DeviceListActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "DeviceListActivity"
-        private const val EXTRA_DEVICE_NAME = "com.example.battleships_demo.device_name"
-        private const val EXTRA_DEVICE_ADDRESS = "com.example.battleships_demo.device_address"
+        const val EXTRA_DEVICE_NAME = "com.example.battleships_demo.device_name"
+        const val EXTRA_DEVICE_ADDRESS = "com.example.battleships_demo.device_address"
     }
 
     private lateinit var mBtAdapter: BluetoothAdapter
@@ -31,6 +33,17 @@ class DeviceListActivity : AppCompatActivity() {
         val pairedListView = findViewById<ListView>(R.id.paired_devices)
         pairedListView.adapter = pairedDevicesArrayAdapter
         pairedListView.onItemClickListener = mDeviceClickListener
+
+        val manager = this.getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
+        mBtAdapter = manager.adapter
+
+        val pairedDevices: Set<BluetoothDevice> = mBtAdapter.bondedDevices
+
+        if(pairedDevices.isNotEmpty()){
+            for(device in pairedDevices){
+                pairedDevicesArrayAdapter.add("${device.name} \n ${device.address}")
+            }
+        }
     }
 
     private val mDeviceClickListener =

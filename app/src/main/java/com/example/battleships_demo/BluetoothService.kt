@@ -265,24 +265,26 @@ class BluetoothService(context: Context, handler: Handler) {
             Log.d(TAG, "run: Start connect thread")
             name = "ConnectThread"
 
-            mAdapter!!.cancelDiscovery()
-
+            // Make a connection to the BluetoothSocket
             try {
+                // This is a blocking call and will only return on a
+                // successful connection or an exception
                 mmSocket!!.connect()
-            } catch (e: IOException){
+            } catch (e: IOException) {
+                // Close the socket
                 try {
                     mmSocket!!.close()
-                } catch (e2: IOException){
-                    Log.e(TAG, "run: unable to close() socket", e)
+                } catch (e2: IOException) {
+                    Log.e(TAG, "unable to close()", e2)
                 }
                 connectionFailed()
                 return
             }
 
-            synchronized(this@BluetoothService){
-                mConnectThread = null
-            }
+            // Reset the ConnectThread because we're done
+            synchronized(this@BluetoothService) { mConnectThread = null }
 
+            // Start the connected thread
             connected(mmSocket, mmDevice!!)
         }
 
@@ -321,7 +323,7 @@ class BluetoothService(context: Context, handler: Handler) {
 
         override fun run() {
             Log.i(TAG, "run: START mConnectedThread")
-            var buffer = ByteArray(1024)
+            val buffer = ByteArray(1024)
             var bytes: Int
 
             while (mState == STATE_CONNECTED) {
