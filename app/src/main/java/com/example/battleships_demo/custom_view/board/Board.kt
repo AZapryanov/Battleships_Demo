@@ -36,7 +36,7 @@ class Board @JvmOverloads constructor(
     private var whatToDoOnTouch: String? = null
 
     private var currentPhase: String = ""
-    lateinit var lastRecordedTouchInput: Array<Int>
+    private var lastRecordedTouchInput = Array<Int>(2) {0}
     private var touchCounter: Int = 0
 
     private var mCellRect: RectF
