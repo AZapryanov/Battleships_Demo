@@ -15,9 +15,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Battleships_Demo">
         <activity
+            android:name=".PlaceShipsActivity"
+            android:exported="false" />
+        <activity
             android:name=".DeviceListActivity"
-            android:exported="false">
-        </activity>
+            android:exported="false"></activity>
         <activity
             android:name=".ConnectActivity"
             android:exported="false" />
