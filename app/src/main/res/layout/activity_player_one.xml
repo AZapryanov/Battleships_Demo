@@ -6,16 +6,29 @@
     android:layout_height="match_parent"
     tools:context="player.PlayerOneActivity">
 
+
     <com.example.battleships_demo.custom_view.board.Board
-        android:id="@+id/cvPlayerOneShips"
+        android:id="@+id/cvPlayerOneAttacks"
         android:layout_width="@dimen/board_size"
         android:layout_height="@dimen/board_size"
-        android:padding="10dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/cvPlayerOneShips"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.495"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:size="10" />
+
+    <com.example.battleships_demo.custom_view.board.Board
+        android:id="@+id/cvPlayerOneShips"
+        android:layout_width="@dimen/board_size"
+        android:layout_height="@dimen/board_size"
+        android:layout_marginBottom="20dp"
+        android:padding="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/buttonGoToPlayerTwo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="parent"
         app:size="10" />
 
     <Button
@@ -29,7 +42,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cvPlayerOneShips" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,11 +3,13 @@ package com.example.battleships_demo.player
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import com.example.battleships_demo.R
+import com.example.battleships_demo.common.Constants
 import kotlinx.android.synthetic.main.activity_player_one.*
 
-class PlayerOneActivity : AppCompatActivity() {
 
+class PlayerOneActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_player_one)
@@ -18,10 +20,11 @@ class PlayerOneActivity : AppCompatActivity() {
         val receivedAction = intent.getStringExtra("placeShipsOrRegisterAttacks")
         val receivedPlayerOneShips = intent.getStringExtra("playerOneShips")
         val receivedPlayerTwoAttacks = intent.getStringExtra("playerTwoAttacks")
+        Log.d(TAG, "onCreate: Hello$receivedPlayerOneShips")
 
         if (receivedAction == "placeShips") {
             cvPlayerOneShips.setPhase("playerOnePlaceShips")
-            cvPlayerOneShips.setWhatToDoOnTouch(2)
+            cvPlayerOneShips.setWhatToDoOnTouch(Constants.DRAW_SHIP_PART)
             isSetupRound = true
 
         } else if (receivedAction == "registerAttacks") {
@@ -30,7 +33,6 @@ class PlayerOneActivity : AppCompatActivity() {
                 transformStringToIntMatrix(receivedPlayerOneShips),
                 transformStringToIntMatrix(receivedPlayerTwoAttacks)
             )
-
             cvPlayerOneShips.setBoardState(updatedPlayerOneShips)
         }
 
@@ -44,7 +46,6 @@ class PlayerOneActivity : AppCompatActivity() {
             } else {
                 intent.putExtra("playerTwoAttacks", receivedPlayerTwoAttacks)
             }
-
             startActivity(intent)
         }
     }
@@ -81,5 +82,9 @@ class PlayerOneActivity : AppCompatActivity() {
             }
         }
         return output
+    }
+
+    companion object {
+        private const val TAG = "PlayerOneActivity"
     }
 }

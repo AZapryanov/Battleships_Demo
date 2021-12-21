@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.battleships_demo.R
+import com.example.battleships_demo.common.Constants
 import kotlinx.android.synthetic.main.activity_player_two.*
 
 class PlayerTwoActivity : AppCompatActivity() {
@@ -16,7 +17,7 @@ class PlayerTwoActivity : AppCompatActivity() {
         val receivedPlayerTwoAttacks = intent.getStringExtra("playerTwoAttacks")
         cvPlayerTwoAttacks.setPhase("playerTwoAttack")
 
-        cvPlayerTwoAttacks.setWhatToDoOnTouch(1)
+        cvPlayerTwoAttacks.setWhatToDoOnTouch(Constants.DRAW_CROSS)
 
         if (receivedPlayerTwoAttacks != "wasSetupRound") {
             cvPlayerTwoAttacks.setBoardState(transformStringToIntMatrix(receivedPlayerTwoAttacks))

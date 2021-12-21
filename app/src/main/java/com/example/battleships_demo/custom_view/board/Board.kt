@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import com.example.battleships_demo.R
+import com.example.battleships_demo.common.Constants
 
 class Board @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -33,7 +34,7 @@ class Board @JvmOverloads constructor(
     // and onDraw will fill the box with green color instead of putting a cross inside
     // If this == 3 -> when there is an OnTouchEvent, the value of the touched box will be set to 3
     // and onDraw will fill the box with red color AND draw a cross inside
-    private var whatToDoOnTouch: Int? = null
+    private var whatToDoOnTouch: String? = null
 
     private var currentPhase: String = ""
     private var touchCounter: Int = 0
@@ -138,13 +139,13 @@ class Board @JvmOverloads constructor(
 
                     //Check whether to fill the box (set a ship) or put a cross (attack)
                     when (whatToDoOnTouch) {
-                        1 -> {
+                        Constants.DRAW_CROSS -> {
                             mBoardState[cellX][cellY] = 1
                         }
-                        2 -> {
+                        Constants.DRAW_SHIP_PART -> {
                             mBoardState[cellX][cellY] = 2
                         }
-                        3 -> {
+                        Constants.DRAW_RED_SHIP_PART_WITH_CROSS -> {
                             mBoardState[cellX][cellY] = 3
                         }
                     }
@@ -174,18 +175,8 @@ class Board @JvmOverloads constructor(
         )
     }
 
-    fun setWhatToDoOnTouch(input: Int) {
-        when (input) {
-            1 -> {
-                whatToDoOnTouch = 1
-            }
-            2 -> {
-                whatToDoOnTouch = 2
-            }
-            3 -> {
-                whatToDoOnTouch = 3
-            }
-        }
+    fun setWhatToDoOnTouch(input: String) {
+        whatToDoOnTouch = input
     }
 
     fun setBoardState(inputState: Array<Array<Int>>) {
