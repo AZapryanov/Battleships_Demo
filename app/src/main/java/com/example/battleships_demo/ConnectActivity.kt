@@ -22,6 +22,7 @@ class ConnectActivity : AppCompatActivity() {
     private var mOutStringBuffer: StringBuffer? = null
     private var mBluetoothAdapter: BluetoothAdapter? = null
     private var mService: BluetoothService? = null
+    // Temporary variable for testing data transmissions
     private var mMessages: ArrayList<String> = ArrayList()
 
     private lateinit var mTextName: TextView
@@ -73,6 +74,9 @@ class ConnectActivity : AppCompatActivity() {
         mService!!.start()
     }
 
+    /**
+     *  Init private variable handler
+     */
     private val mHandler = Handler(Looper.getMainLooper()) { msg ->
         when (msg.what) {
             Constants.MESSAGE_STATE_CHANGE ->
