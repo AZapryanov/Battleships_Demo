@@ -1,11 +1,10 @@
-package com.example.battleships_demo
+package com.example.battleships_demo.bluetooth
 
 
 import android.bluetooth.*
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
-import android.os.Message
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import java.io.IOException

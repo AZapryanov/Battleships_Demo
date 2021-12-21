@@ -1,4 +1,4 @@
-package com.example.battleships_demo
+package com.example.battleships_demo.bluetooth
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -10,6 +10,7 @@ import android.widget.AdapterView.OnItemClickListener
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.TextView
+import com.example.battleships_demo.R
 
 class DeviceListActivity : AppCompatActivity() {
 
@@ -29,7 +30,8 @@ class DeviceListActivity : AppCompatActivity() {
         setResult(RESULT_CANCELED)
 
         val pairedDevicesArrayAdapter = ArrayAdapter<String>(
-            this, R.layout.device_info)
+            this, R.layout.device_info
+        )
         val pairedListView = findViewById<ListView>(R.id.paired_devices)
         pairedListView.adapter = pairedDevicesArrayAdapter
         pairedListView.onItemClickListener = mDeviceClickListener

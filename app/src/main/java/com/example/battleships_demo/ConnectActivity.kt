@@ -1,7 +1,6 @@
 package com.example.battleships_demo
 
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
@@ -9,12 +8,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.Message
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.getSystemService
+import com.example.battleships_demo.bluetooth.BluetoothService
+import com.example.battleships_demo.bluetooth.Constants
+import com.example.battleships_demo.bluetooth.DeviceListActivity
 
 class ConnectActivity : AppCompatActivity() {
 

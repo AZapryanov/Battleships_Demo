@@ -1,4 +1,4 @@
-package com.example.battleships_demo
+package com.example.battleships_demo.bluetooth
 
 interface Constants {
     companion object {
