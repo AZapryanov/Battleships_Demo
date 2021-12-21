@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="player.PlayerOneActivity">
+    tools:context=".ships_placement_round.ShipsPlacementActivity">
 
-    <com.example.battleships_demo.custom_view.board.BoardTest
-        android:id="@+id/cvPlayerOneShips"
+    <com.example.battleships_demo.custom_view.board.Board
+        android:id="@+id/cvPlaceShipsBoard"
         android:layout_width="@dimen/board_size"
         android:layout_height="@dimen/board_size"
         android:padding="10dp"
@@ -19,17 +19,17 @@
         app:size="10" />
 
     <Button
-        android:id="@+id/buttonGoToPlayerTwo"
+        android:id="@+id/buttonReady"
         android:layout_width="0dp"
         android:layout_height="50dp"
         android:backgroundTint="@android:color/holo_blue_light"
-        android:text="Go to player two"
+        android:text="Ready"
         android:textAllCaps="false"
         android:textSize="15sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cvPlayerOneShips" />
+        app:layout_constraintTop_toBottomOf="@+id/cvPlaceShipsBoard" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

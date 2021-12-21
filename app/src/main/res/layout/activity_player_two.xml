@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context="player.PlayerTwoActivity">
 
-    <com.example.battleships_demo.custom_view.board.Board
+    <com.example.battleships_demo.custom_view.board.BoardTest
         android:id="@+id/cvPlayerTwoAttacks"
         android:layout_width="@dimen/board_size"
         android:layout_height="@dimen/board_size"
