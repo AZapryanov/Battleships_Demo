@@ -9,17 +9,17 @@ import android.util.AttributeSet
 import android.view.View
 import com.example.battleships_demo.R
 
-class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
-    private var mBoardSize: Int
-    private var mCellWidth: Float = 0f
-    private var mCellHeight: Float = 0f
+open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
+    protected var mBoardSize: Int
+    protected var mCellWidth: Float = 0f
+    protected var mCellHeight: Float = 0f
 
     // This creates a 2D array initialized with 0s
-    private var mBoardState: Array<Array<Int>>
-    private val mEmptyPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val mClickedPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    protected var mBoardState: Array<Array<Int>>
+    protected val mDefRectPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    protected val mGreenPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
-    private var mCellRect: RectF
+    protected var mCellRect: RectF
 
     companion object {
         private const val TAG = "Board"
@@ -41,13 +41,12 @@ class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
         mBoardState = Array(mBoardSize) { Array(mBoardSize) { 0 } }
 
-        mEmptyPaint.style = Paint.Style.STROKE
-        mEmptyPaint.color = Color.BLACK
-        mEmptyPaint.strokeWidth = 5f
+        mDefRectPaint.style = Paint.Style.STROKE
+        mDefRectPaint.color = Color.BLACK
+        mDefRectPaint.strokeWidth = 5f
 
-        mClickedPaint.style = Paint.Style.FILL_AND_STROKE
-        mClickedPaint.color = Color.GRAY
-        mClickedPaint.strokeWidth = 5f
+        mGreenPaint.style = Paint.Style.FILL
+        mGreenPaint.color = Color.GREEN
 
         mCellRect = RectF()
     }
@@ -71,7 +70,9 @@ class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
                 mCellRect.set(left, top, right, bottom)
 
                 if (mBoardState[i][j] == 0) {
-                    canvas?.drawRect(mCellRect, mEmptyPaint)
+                    canvas?.drawRect(mCellRect, mDefRectPaint)
+                } else if (mBoardState[i][j] == 1){
+                    canvas?.drawRect(mCellRect, mGreenPaint)
                 }
             }
         }
