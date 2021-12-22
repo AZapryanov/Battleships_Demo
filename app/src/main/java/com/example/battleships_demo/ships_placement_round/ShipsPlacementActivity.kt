@@ -39,7 +39,7 @@ class ShipsPlacementActivity : AppCompatActivity() {
             isReceivedOtherPlayerShips = true
             //This is only for testing purposes - should be received from BT
             otherPlayerShipsPlacement =
-                "0202020202020202020202020202022202020202020202020200000000000000000000000000000000000000000000000000"
+                "2222200022220000002220000000222000000000220002200000000000000000000000000000000000000000000000000000"
             //The ready check can be whether I received the ships of the opponent and also sent mine then
             // the following check will pass and the game activity will be launched:
             if (isReceivedOtherPlayerShips && otherPlayerShipsPlacement != null && isSentMyShipsToOpponent) {

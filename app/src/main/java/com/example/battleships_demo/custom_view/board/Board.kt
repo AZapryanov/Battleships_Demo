@@ -36,7 +36,7 @@ class Board @JvmOverloads constructor(
     private var whatToDoOnTouch: String? = null
 
     private var currentPhase: String = ""
-    private var lastRecordedTouchInput = Array<Int>(2) {0}
+    private var lastRecordedTouchInput = Array(2) {0}
     private var touchCounter: Int = 0
 
     private var mCellRect: RectF
@@ -215,6 +215,10 @@ class Board @JvmOverloads constructor(
 
     fun getLastTouchInput(): Array<Int> {
         return  lastRecordedTouchInput
+    }
+
+    fun resetBoardTouchCounter() {
+        touchCounter = 0
     }
 
 //    fun setWhatToDoOnTouch(input: String) {
