@@ -16,12 +16,6 @@
             android:name=".ships_placement_round.ShipsPlacementActivity"
             android:exported="false" />
         <activity
-            android:name=".player.PlayerTwoActivity"
-            android:exported="false" />
-        <activity
-            android:name=".player.PlayerOneActivity"
-            android:exported="false" />
-        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

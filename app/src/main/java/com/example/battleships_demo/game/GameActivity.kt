@@ -13,71 +13,63 @@ import kotlinx.android.synthetic.main.activity_game.*
 private const val TAG = "GameActivity"
 
 class GameActivity : AppCompatActivity() {
-
-    private var isPlayerOne = true
-    private val isMyTurn: MutableLiveData<Boolean> by lazy {
+    private val mIsMyTurn: MutableLiveData<Boolean> by lazy {
+        MutableLiveData<Boolean>()
+    }
+    private val mShouldReceiveOpponentAttack: MutableLiveData<Boolean> by lazy {
         MutableLiveData<Boolean>()
     }
 
-//    private val isEndTurnButtonVisible: MutableLiveData<Boolean> by lazy {
-//        MutableLiveData<Boolean>()
-//    }
-
-    private val shouldReceiveOpponentAttack: MutableLiveData<Boolean> by lazy {
-        MutableLiveData<Boolean>()
-    }
-
-    private var isNotFirstTurn = false
-    private var isEndgame = false
-    private lateinit var enemyShipsPositions: Array<Array<Int>>
-    private lateinit var myAttacksPositionsFromPreviousRound: Array<Array<Int>>
-    private lateinit var myShipsPositionsFromPreviousRound: Array<Array<Int>>
-    private var opponentAttackCoordinates = Array(2) { 0 }
+    private var mIsPlayerOne = true
+    private var mIsNotFirstTurn = false
+    private var mIsEndgame = false
+    private lateinit var mEnemyShipsPositions: Array<Array<Int>>
+    private lateinit var mMyAttacksPositionsFromPreviousRound: Array<Array<Int>>
+    private lateinit var mMyShipsPositionsFromPreviousRound: Array<Array<Int>>
+    private var mOpponentAttackCoordinates = Array(2) { 0 }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
 
         //The following block is executed only one time at the start of the game
-//        isMyTurn.value = false
+        //------------------------------------
         val myShipsPositionsFromIntent = intent.getStringExtra("myShips")
-        enemyShipsPositions = transformStringToIntMatrix(intent.getStringExtra("enemyShips"))
-        myShipsPositionsFromPreviousRound = transformStringToIntMatrix(myShipsPositionsFromIntent)
-        myAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
+        mEnemyShipsPositions = transformStringToIntMatrix(intent.getStringExtra("enemyShips"))
+        mMyShipsPositionsFromPreviousRound = transformStringToIntMatrix(myShipsPositionsFromIntent)
+        mMyAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
 
-        isPlayerOne = intent.getBooleanExtra("isPlayerOneOrTwo", false)
-        cvMyShips.setBoardState(myShipsPositionsFromPreviousRound)
+        mIsPlayerOne = intent.getBooleanExtra("isPlayerOneOrTwo", false)
+        cvMyShips.setBoardState(mMyShipsPositionsFromPreviousRound)
 
-        if (isPlayerOne) {
-            isMyTurn.value = true
+        if (mIsPlayerOne) {
+            mIsMyTurn.value = true
         }
+        //------------------------------------
 
-        //isMyTurn changes to true when a BT intent is received from the opponent that he finished his turn and the following code executes
-        isMyTurn.observe(this, {
+        //If the value of mIsMyTurn changes due to received opponent attack coordinates through BT,
+        //meaning that he finished his turn, the following code executes
+        mIsMyTurn.observe(this, {
             cvMyShips.setPhase(Constants.PHASE_TOUCH_INPUTS_LOCKED)
             cvMyAttacks.setPhase(Constants.PHASE_MARK_ATTACK)
 
             //My ships are updated based on the received attack coordinated from the opponent
-            if (isNotFirstTurn) {
+            if (mIsNotFirstTurn) {
                 val updatedMyShips = updateMyShips()
                 cvMyShips.setBoardState(updatedMyShips)
 
-                isEndgame = checkIfGameHasEnded(cvMyShips.getBoardState())
-                if (isEndgame) {
+                mIsEndgame = checkIfGameHasEnded(cvMyShips.getBoardState())
+                if (mIsEndgame) {
                     cvMyAttacks.setPhase(Constants.PHASE_TOUCH_INPUTS_LOCKED)
                     buttonEndTurn.visibility = View.GONE
                     Toast.makeText(this, "GG, You have lost!", Toast.LENGTH_LONG).show()
                 }
             }
-            if (!isEndgame) {
+            if (!mIsEndgame) {
                 buttonEndTurn.visibility = View.VISIBLE
             }
-            isNotFirstTurn = true
+            mIsNotFirstTurn = true
         })
-
-//        isEndTurnButtonVisible.observe(this, {
-//
-//        })
 
         buttonEndTurn.setOnClickListener {
             cvMyAttacks.resetBoardTouchCounter()
@@ -88,10 +80,10 @@ class GameActivity : AppCompatActivity() {
             //My attack board is updated based on my attack coordinates and whether is a hit or miss
             val updatedMyAttacks = updateMyAttacks(myAttackCoordinates)
             cvMyAttacks.setBoardState(updatedMyAttacks)
-            myAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
+            mMyAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
 
-            isEndgame = checkIfGameHasEnded(cvMyAttacks.getBoardState())
-            if (isEndgame) {
+            mIsEndgame = checkIfGameHasEnded(cvMyAttacks.getBoardState())
+            if (mIsEndgame) {
                 //Send my attack coordinates to opponent so that his board can update to the final state and also register Endgame
                 buttonEndTurn.visibility = View.GONE
                 cvMyAttacks.setPhase(Constants.PHASE_TOUCH_INPUTS_LOCKED)
@@ -99,38 +91,35 @@ class GameActivity : AppCompatActivity() {
             }
 
             //Send my attack coordinates as array to other player through BT
-
             //For test purposes:
-            if (!isEndgame) {
-                shouldReceiveOpponentAttack.value = !shouldReceiveOpponentAttack.equals(true)
+            if (!mIsEndgame) {
+                mShouldReceiveOpponentAttack.value = !mShouldReceiveOpponentAttack.equals(true)
             }
 
         }
 
-        shouldReceiveOpponentAttack.observe(this, {
-            opponentAttackCoordinates = generateRandomOpponentAttack()
-            isMyTurn.value = !isMyTurn.equals(true)
+        mShouldReceiveOpponentAttack.observe(this, {
+            mOpponentAttackCoordinates = generateRandomOpponentAttack()
+            mIsMyTurn.value = !mIsMyTurn.equals(true)
         })
     }
 
     private fun generateRandomOpponentAttack(): Array<Int> {
         val coordinates = Array(2) { 0 }
-        val xCoordinateOpponent = (0..9).random()
-        val yCoordinateOpponent = (0..9).random()
-        coordinates[0] = xCoordinateOpponent
-        coordinates[1] = yCoordinateOpponent
+        coordinates[0] = (0..9).random()
+        coordinates[1] = (0..9).random()
         return coordinates
     }
 
     private fun updateMyAttacks(myAttackCoordinates: Array<Int>): Array<Array<Int>> {
-        val updatedMyAttacks = myAttacksPositionsFromPreviousRound
+        val updatedMyAttacks = mMyAttacksPositionsFromPreviousRound
         val currentAttackX = myAttackCoordinates[0]
         val currentAttackY = myAttackCoordinates[1]
 
-        if (enemyShipsPositions[currentAttackX][currentAttackY] == 0) {
+        if (mEnemyShipsPositions[currentAttackX][currentAttackY] == 0) {
             updatedMyAttacks[currentAttackX][currentAttackY] = 1
 
-        } else if (enemyShipsPositions[currentAttackX][currentAttackY] == 2) {
+        } else if (mEnemyShipsPositions[currentAttackX][currentAttackY] == 2) {
             updatedMyAttacks[currentAttackX][currentAttackY] = 3
         }
 
@@ -138,14 +127,14 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun updateMyShips(): Array<Array<Int>> {
-        val updatedCvMyShips = myShipsPositionsFromPreviousRound
-        val currentAttackX = opponentAttackCoordinates[0]
-        val currentAttackY = opponentAttackCoordinates[1]
+        val updatedCvMyShips = mMyShipsPositionsFromPreviousRound
+        val currentAttackX = mOpponentAttackCoordinates[0]
+        val currentAttackY = mOpponentAttackCoordinates[1]
 
-        if (myShipsPositionsFromPreviousRound[currentAttackX][currentAttackY] == 0) {
+        if (mMyShipsPositionsFromPreviousRound[currentAttackX][currentAttackY] == 0) {
             updatedCvMyShips[currentAttackX][currentAttackY] = 1
 
-        } else if (myShipsPositionsFromPreviousRound[currentAttackX][currentAttackY] == 2) {
+        } else if (mMyShipsPositionsFromPreviousRound[currentAttackX][currentAttackY] == 2) {
             updatedCvMyShips[currentAttackX][currentAttackY] = 3
         }
         return updatedCvMyShips

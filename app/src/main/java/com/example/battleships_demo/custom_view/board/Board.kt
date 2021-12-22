@@ -8,7 +8,6 @@ import android.view.MotionEvent
 import android.view.View
 import com.example.battleships_demo.R
 import com.example.battleships_demo.common.Constants
-import com.example.battleships_demo.game.GameActivity
 
 class Board @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -33,11 +32,12 @@ class Board @JvmOverloads constructor(
     // and onDraw will draw a cross inside the box
     // If this == drawShipPart -> when there is an OnTouchEvent, the value of the touched box will be set to 2
     // and onDraw will fill the box with green color instead of putting a cross inside
-    private var whatToDoOnTouch: String? = null
-
-    private var currentPhase: String = ""
-    private var lastRecordedTouchInput = Array(2) {0}
-    private var touchCounter: Int = 0
+    // If this == drawRedShipPartWithCross -> when there is an OnTouchEvent, the value of the touched box will be set to 3
+    // and onDraw will fill the box with red color and put a cross inside
+    private var mWhatToDoOnTouch: String = ""
+    private var mCurrentPhase: String = ""
+    private var mLastRecordedTouchInput = Array(2) {0}
+    private var mTouchCounter: Int = 0
 
     private var mCellRect: RectF
 
@@ -119,21 +119,20 @@ class Board @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if (mCurrentPhase == "doAttack") {
+            mWhatToDoOnTouch = "drawCross"
 
-        if (currentPhase == "doAttack") {
-            whatToDoOnTouch = "drawCross"
-
-        } else if (currentPhase == "placeShips") {
-            whatToDoOnTouch = "drawShipPart"
+        } else if (mCurrentPhase == "placeShips") {
+            mWhatToDoOnTouch = "drawShipPart"
         }
 
-        if (touchCounter >= 1 && currentPhase == "doAttack") {
+        if (mTouchCounter >= 1 && mCurrentPhase == "doAttack") {
             return false
 
-        } else if (touchCounter >= 17 && currentPhase == "placeShips") {
+        } else if (mTouchCounter >= 17 && mCurrentPhase == "placeShips") {
             return false
 
-        } else if (currentPhase == "receiveAttack" || currentPhase == "lock") {
+        } else if (mCurrentPhase == "receiveAttack" || mCurrentPhase == "lock") {
             return false
 
         } else {
@@ -145,11 +144,11 @@ class Board @JvmOverloads constructor(
                     val cellX = (event.x / mCellWidth).toInt()
                     val cellY = (event.y / mCellHeight).toInt()
 
-                    lastRecordedTouchInput[0] = cellX
-                    lastRecordedTouchInput[1] = cellY
+                    mLastRecordedTouchInput[0] = cellX
+                    mLastRecordedTouchInput[1] = cellY
 
                     //Check whether to fill the box (set a ship) or put a cross (attack)
-                    when (whatToDoOnTouch) {
+                    when (mWhatToDoOnTouch) {
                         Constants.DRAW_CROSS -> {
                             mBoardState[cellX][cellY] = 1
                         }
@@ -161,7 +160,7 @@ class Board @JvmOverloads constructor(
                         }
                     }
                     invalidate()
-                    touchCounter++
+                    mTouchCounter++
                     return true
                 }
             }
@@ -187,7 +186,7 @@ class Board @JvmOverloads constructor(
     }
 
     fun setPhase(phase: String) {
-        currentPhase = phase
+        mCurrentPhase = phase
     }
 
     fun setBoardState(inputState: Array<Array<Int>>) {
@@ -214,18 +213,10 @@ class Board @JvmOverloads constructor(
     }
 
     fun getLastTouchInput(): Array<Int> {
-        return  lastRecordedTouchInput
+        return  mLastRecordedTouchInput
     }
 
     fun resetBoardTouchCounter() {
-        touchCounter = 0
+        mTouchCounter = 0
     }
-
-//    fun setWhatToDoOnTouch(input: String) {
-//        whatToDoOnTouch = input
-//    }
-
-//    fun clearBoardState() {
-//        mBoardState = Array(mBoardSize) { Array(mBoardSize) {0} }
-//    }
 }

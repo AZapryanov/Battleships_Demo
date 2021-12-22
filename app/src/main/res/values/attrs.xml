@@ -3,7 +3,4 @@
     <declare-styleable name="Board">
         <attr name="size" format="integer" />
     </declare-styleable>
-    <declare-styleable name="BoardTest">
-        <attr name="size1" format="integer" />
-    </declare-styleable>
 </resources>
