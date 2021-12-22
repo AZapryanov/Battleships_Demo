@@ -51,6 +51,10 @@ open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
         mCellRect = RectF()
     }
 
+    fun getBoardState(): Array<Array<Int>> {
+        return mBoardState
+    }
+
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
 
