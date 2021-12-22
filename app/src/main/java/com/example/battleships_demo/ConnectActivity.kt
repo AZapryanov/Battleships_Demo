@@ -59,6 +59,7 @@ class ConnectActivity : AppCompatActivity() {
 
         if (!mBluetoothAdapter!!.isEnabled) {
             val enableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            // I'll fix this don't worry
             startActivityForResult(
                 enableIntent,
                 REQUEST_ENABLE_BT
