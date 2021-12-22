@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -50,6 +51,10 @@ class ConnectActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btn_connect).setOnClickListener {
             val intent = Intent(this, DeviceListActivity::class.java)
             resultLauncher.launch(intent)
+        }
+
+        findViewById<Button>(R.id.btn_send_hi).setOnClickListener {
+            mService?.write("Hi $mConnectedDeviceName".toByteArray())
         }
     }
 
@@ -108,7 +113,8 @@ class ConnectActivity : AppCompatActivity() {
                 val readBuf = msg.obj as ByteArray
                 // construct a string from the valid bytes in the buffer
                 val readMessage = String(readBuf, 0, msg.arg1)
-                mMessages.add(readMessage)
+                Log.d(TAG, "reading message: $readMessage")
+                true
             }
             Constants.MESSAGE_DEVICE_NAME -> {
                 // save the connected device's name
