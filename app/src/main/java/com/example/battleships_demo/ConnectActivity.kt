@@ -54,7 +54,7 @@ class ConnectActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.btn_send_hi).setOnClickListener {
-            mService?.write("Hi $mConnectedDeviceName".toByteArray())
+            BluetoothService.write("Hi $mConnectedDeviceName".toByteArray())
         }
     }
 
@@ -70,14 +70,12 @@ class ConnectActivity : AppCompatActivity() {
                 REQUEST_ENABLE_BT
             )
         }
-        if (mService == null){
-            // Initialize the BluetoothChatService to perform bluetooth connections
-            mService = BluetoothService(this, mHandler)
-            // Initialize the buffer for outgoing messages
-            mOutStringBuffer = StringBuffer()
-        }
+        // Initialize the BluetoothChatService to perform bluetooth connections
+        BluetoothService.init(this, mHandler)
+        // Initialize the buffer for outgoing messages
+        mOutStringBuffer = StringBuffer()
 
-        mService!!.start()
+        BluetoothService.start()
     }
 
     /**
@@ -140,7 +138,7 @@ class ConnectActivity : AppCompatActivity() {
         // Get the BluetoothDevice object
         val device = mBluetoothAdapter!!.getRemoteDevice(address)
         // Attempt to connect to the device
-        mService!!.connect(device, secure)
+        BluetoothService.connect(device, secure)
     }
 
     private fun setStatus(str: String){

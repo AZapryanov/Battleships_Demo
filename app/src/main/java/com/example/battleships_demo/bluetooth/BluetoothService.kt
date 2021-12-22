@@ -12,17 +12,16 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.util.*
 
-class BluetoothService(context: Context, handler: Handler) {
+object BluetoothService {
 
-    companion object {
-        // Debugging
-        private const val TAG = "BluetoothChatService"
-        // Constants that indicate the current connection state
-        const val STATE_NONE = 0 // we're doing nothing
-        const val STATE_LISTEN = 1 // now listening for incoming connections
-        const val STATE_CONNECTING = 2 // now initiating an outgoing connection
-        const val STATE_CONNECTED = 3 // now connected to a remote device
-    }
+    // Debugging
+    private const val TAG = "BluetoothChatService"
+    // Constants that indicate the current connection state
+    const val STATE_NONE = 0 // we're doing nothing
+    const val STATE_LISTEN = 1 // now listening for incoming connections
+    const val STATE_CONNECTING = 2 // now initiating an outgoing connection
+    const val STATE_CONNECTED = 3 // now connected to a remote device
+
 
     // Name for the SDP record when creating server socket
     private val NAME_SECURE = "BluetoothChatSecure"
@@ -42,8 +41,8 @@ class BluetoothService(context: Context, handler: Handler) {
     private var mState = 0
     private var mNewState = 0
 
-    // Constructor. Prepares a new Bluetooth session.
-    init {
+    // Acts as constructor. Prepares a new Bluetooth session.
+    fun init(context: Context, handler: Handler){
         val manager = context.getSystemService(AppCompatActivity.BLUETOOTH_SERVICE) as BluetoothManager
         mAdapter = manager.adapter
         mState = STATE_NONE
@@ -225,7 +224,7 @@ class BluetoothService(context: Context, handler: Handler) {
         updateUserInterfaceTitle()
 
         // Start the service over to restart listening mode
-        this@BluetoothService.start()
+        BluetoothService.start()
     }
 
     /**
@@ -243,7 +242,7 @@ class BluetoothService(context: Context, handler: Handler) {
         updateUserInterfaceTitle()
 
         // Start the service over to restart listening mode
-        this@BluetoothService.start()
+        BluetoothService.start()
     }
 
     /**
@@ -251,7 +250,7 @@ class BluetoothService(context: Context, handler: Handler) {
      * like a server-side client. It runs until a connection is accepted
      * (or until cancelled).
      */
-    private inner class AcceptThread(secure: Boolean) : Thread() {
+    private class AcceptThread(secure: Boolean) : Thread() {
         // The local server socket
         private val mmServerSocket: BluetoothServerSocket?
         private val mSocketType: String
@@ -276,7 +275,7 @@ class BluetoothService(context: Context, handler: Handler) {
 
                 // If a connection was accepted
                 if (socket != null) {
-                    synchronized(this@BluetoothService) {
+                    synchronized(BluetoothService) {
                         when (mState) {
                             STATE_LISTEN, STATE_CONNECTING ->
                                 // Situation normal. Start the connected thread.
@@ -338,7 +337,7 @@ class BluetoothService(context: Context, handler: Handler) {
      * with a device. It runs straight through; the connection either
      * succeeds or fails.
      */
-    private inner class ConnectThread(private val mmDevice: BluetoothDevice, secure: Boolean) :
+    private class ConnectThread(private val mmDevice: BluetoothDevice, secure: Boolean) :
         Thread() {
         private val mmSocket: BluetoothSocket?
         private val mSocketType: String
@@ -368,7 +367,7 @@ class BluetoothService(context: Context, handler: Handler) {
             }
 
             // Reset the ConnectThread because we're done
-            synchronized(this@BluetoothService) { mConnectThread = null }
+            synchronized(BluetoothService) { mConnectThread = null }
 
             // Start the connected thread
             connected(mmSocket, mmDevice, mSocketType)
@@ -410,7 +409,7 @@ class BluetoothService(context: Context, handler: Handler) {
      * This thread runs during a connection with a remote device.
      * It handles all incoming and outgoing transmissions.
      */
-    private inner class ConnectedThread(socket: BluetoothSocket, socketType: String) :
+    private class ConnectedThread(socket: BluetoothSocket, socketType: String) :
         Thread() {
         private val mmSocket: BluetoothSocket
         private val mmInStream: InputStream?
