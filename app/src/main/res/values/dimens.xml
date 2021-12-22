@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="editable_board_width">400dp</dimen>
+    <dimen name="editable_board_height">550dp</dimen>
+</resources>
