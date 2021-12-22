@@ -53,9 +53,9 @@ class ConnectActivity : AppCompatActivity() {
             resultLauncher.launch(intent)
         }
 
-        findViewById<Button>(R.id.btn_send_hi).setOnClickListener {
-            BluetoothService.write("Hi $mConnectedDeviceName".toByteArray())
-        }
+//        findViewById<Button>(R.id.btn_send_hi).setOnClickListener {
+//            BluetoothService.write("Hi $mConnectedDeviceName".toByteArray())
+//        }
     }
 
     override fun onStart() {
