@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.battleships_demo">
 
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -10,10 +15,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Battleships_Demo">
         <activity
+
             android:name=".game.GameActivity"
             android:exported="false" />
         <activity
             android:name=".ships_placement_round.ShipsPlacementActivity"
+                  
+            android:name=".PlaceShipsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".bluetooth.DeviceListActivity"
+            android:exported="false"></activity>
+        <activity
+            android:name=".ConnectActivity"
+
             android:exported="false" />
         <activity
             android:name=".MainActivity"

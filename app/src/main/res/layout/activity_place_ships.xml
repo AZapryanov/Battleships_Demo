@@ -4,17 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".PlaceShipsActivity">
 
-    <Button
-        android:id="@+id/btn_start_connect_activity"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="144dp"
-        android:text="Connect to device"
+    <com.example.battleships_demo.customviews.EditableBoard
+        android:id="@+id/editable_board"
+        android:layout_width="@dimen/editable_board_width"
+        android:layout_height="@dimen/editable_board_height"
+        android:layout_marginTop="88dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:size="10" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
