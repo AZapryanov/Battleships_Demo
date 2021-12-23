@@ -53,7 +53,6 @@ class ConnectActivity : AppCompatActivity() {
             }
         }
 
-
         findViewById<Button>(R.id.btn_connect).setOnClickListener {
             val intent = Intent(this, DeviceListActivity::class.java)
             resultLauncher.launch(intent)
@@ -125,8 +124,10 @@ class ConnectActivity : AppCompatActivity() {
                 val readBuf = msg.obj as ByteArray
                 // construct a string from the valid bytes in the buffer
                 val readMessage = String(readBuf, 0, msg.arg1)
+                // This gets single coordinates from an attack
                 BluetoothService.mReceivedMessage = readMessage
                 Log.d(TAG, "reading message: $readMessage")
+                // This is used once for transferring initial boards
                 BluetoothService.mEnemyBoard = readMessage
                 true
             }

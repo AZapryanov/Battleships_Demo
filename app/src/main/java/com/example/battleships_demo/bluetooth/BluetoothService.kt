@@ -40,8 +40,8 @@ object BluetoothService {
     private var mConnectedThread: ConnectedThread? = null
     private var mState = 0
     private var mNewState = 0
-    var mReceivedMessage = ""
 
+    var mReceivedMessage = ""
     var mMyBoard: String? = null
     var mEnemyBoard: String? = null
 

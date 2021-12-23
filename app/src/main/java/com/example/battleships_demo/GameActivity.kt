@@ -37,6 +37,9 @@ class GameActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
 
+        // TEMP
+        BluetoothService.mReceivedMessage = ""
+
         //The following block is executed only one time at the start of the game
         //------------------------------------
         val myShipsPositionsFromIntent = intent.getStringExtra(PlaceShipsActivity.EXTRA_MY_SHIPS)
