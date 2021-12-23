@@ -5,9 +5,13 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.customviews.Board
 import kotlinx.android.synthetic.main.activity_game.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class GameActivity : AppCompatActivity() {
 
@@ -112,18 +116,22 @@ class GameActivity : AppCompatActivity() {
                 var receivedAttackThroughBt = ""
                 val receivedAttackAsArray = Array(2) { 0 }
 
-                //Waiting to receive opponent attack coordinates and to start my next turn
-                while (true) {
-                    receivedAttackThroughBt = BluetoothService.mReceivedMessage
+                lifecycleScope.launch(Dispatchers.Default) {
+                    //Waiting to receive opponent attack coordinates and to start my next turn
+                    while (true) {
+                        receivedAttackThroughBt = BluetoothService.mReceivedMessage
 
-                    if (receivedAttackThroughBt.length > 1) {
-                        receivedAttackAsArray[0] = receivedAttackThroughBt[0].digitToInt()
-                        receivedAttackAsArray[1] = receivedAttackThroughBt[1].digitToInt()
-                        break
+                        if (receivedAttackThroughBt.length > 1) {
+                            receivedAttackAsArray[0] = receivedAttackThroughBt[0].digitToInt()
+                            receivedAttackAsArray[1] = receivedAttackThroughBt[1].digitToInt()
+                            break
+                        }
+                    }
+                    launch (Dispatchers.Main){
+                        BluetoothService.clearMReceivedMessage()
+                        mOpponentAttackCoordinates.value = receivedAttackAsArray
                     }
                 }
-                BluetoothService.clearMReceivedMessage()
-                mOpponentAttackCoordinates.value = receivedAttackAsArray
             }
         }
 
