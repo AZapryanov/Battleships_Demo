@@ -91,6 +91,7 @@ class GameActivity : AppCompatActivity() {
             mMyAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
 
             mIsEndgame = checkIfGameHasEnded(cvMyAttacks.getBoardState())
+
             if (mIsEndgame) {
                 //Send my attack coordinates to opponent so that his board can update to the final state and also register Endgame
                 buttonEndTurn.visibility = View.GONE
@@ -98,17 +99,17 @@ class GameActivity : AppCompatActivity() {
                 Toast.makeText(this, "GG, You have won!", Toast.LENGTH_LONG).show()
             }
 
-            //Send my attack coordinates as array to other player through BT
-            var attackCoordinatesToSendThroughBt = ""
-            attackCoordinatesToSendThroughBt += myAttackCoordinates[0].toString()
-            attackCoordinatesToSendThroughBt += myAttackCoordinates[1].toString()
-            BluetoothService.write(attackCoordinatesToSendThroughBt.toByteArray())
-
-
             if (!mIsEndgame) {
+                //Sending my attack coordinates as array to other player through BT
+                var attackCoordinatesToSendThroughBt = ""
+                attackCoordinatesToSendThroughBt += myAttackCoordinates[0].toString()
+                attackCoordinatesToSendThroughBt += myAttackCoordinates[1].toString()
+                BluetoothService.write(attackCoordinatesToSendThroughBt.toByteArray())
+
                 var receivedAttackThroughBt = ""
                 val receivedAttackAsArray = Array(2) { 0 }
-                //Waiting to receive opponent attack coordinates and to start my turn
+
+                //Waiting to receive opponent attack coordinates and to start my next turn
                 while (true) {
                     receivedAttackThroughBt = BluetoothService.mReceivedMessage
 
@@ -121,6 +122,8 @@ class GameActivity : AppCompatActivity() {
                 mOpponentAttackCoordinates.value = receivedAttackAsArray
             }
         }
+
+        //When attack coordinates are received from other player through BT by switching the value of mIsMyTurn, my next turn is started
         mOpponentAttackCoordinates.observe(this, {
             mIsMyTurn.value = !mIsMyTurn.equals(true)
         })
