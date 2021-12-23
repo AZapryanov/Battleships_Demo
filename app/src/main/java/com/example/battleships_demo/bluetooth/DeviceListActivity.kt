@@ -29,6 +29,7 @@ class DeviceListActivity : AppCompatActivity() {
         // In case the user backs out
         setResult(RESULT_CANCELED)
 
+        // This is a view with buttons
         val pairedDevicesArrayAdapter = ArrayAdapter<String>(
             this, R.layout.device_info
         )

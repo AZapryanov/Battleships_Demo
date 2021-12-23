@@ -42,8 +42,8 @@ object BluetoothService {
     private var mNewState = 0
     var mReceivedMessage = ""
 
-    var player1Ready = false
-    var player2Ready = false
+    var mMyBoard: String? = null
+    var mEnemyBoard: String? = null
 
     // Acts as constructor. Prepares a new Bluetooth session.
     fun init(context: Context, handler: Handler){
@@ -55,15 +55,15 @@ object BluetoothService {
     }
 
     /**
-     * Update UI title according to the current state of the connection
+     * Notify user of the current state of the connection
      */
     @Synchronized
-    private fun updateUserInterfaceTitle() {
+    private fun notifyStateChange() {
         mState = getState()
-        Log.d(TAG, "updateUserInterfaceTitle() $mNewState -> $mState")
+        Log.d(TAG, "notifyStateChange() $mNewState -> $mState")
         mNewState = mState
 
-        // Give the new state to the Handler so the UI Activity can update
+        // Give the new state to the Handler
         mHandler!!.obtainMessage(Constants.MESSAGE_STATE_CHANGE, mNewState, -1).sendToTarget()
     }
 
@@ -102,8 +102,8 @@ object BluetoothService {
             mInsecureAcceptThread = AcceptThread(false)
             mInsecureAcceptThread!!.start()
         }
-        // Update UI title
-        updateUserInterfaceTitle()
+
+        notifyStateChange()
     }
 
     // Start the ConnectThread to initiate a connection to a remote device.
@@ -128,8 +128,8 @@ object BluetoothService {
         // Start the thread to connect with the given device
         mConnectThread = ConnectThread(device, secure)
         mConnectThread!!.start()
-        // Update UI title
-        updateUserInterfaceTitle()
+
+        notifyStateChange()
     }
 
     // Start the ConnectedThread to begin managing a Bluetooth connection
@@ -163,14 +163,14 @@ object BluetoothService {
         mConnectedThread = ConnectedThread(socket, socketType)
         mConnectedThread!!.start()
 
-        // Send the name of the connected device back to the UI Activity
-        val msg = mHandler!!.obtainMessage(Constants.MESSAGE_DEVICE_NAME)
+        // Send the connected device back to the UI Activity
+        val msg = mHandler!!.obtainMessage(Constants.MESSAGE_DEVICE)
         val bundle = Bundle()
         bundle.putString(Constants.DEVICE_NAME, device.name)
         msg.data = bundle
         mHandler!!.sendMessage(msg)
-        // Update UI title
-        updateUserInterfaceTitle()
+
+        notifyStateChange()
     }
 
     /**
@@ -196,8 +196,8 @@ object BluetoothService {
             mInsecureAcceptThread = null
         }
         mState = STATE_NONE
-        // Update UI title
-        updateUserInterfaceTitle()
+
+        notifyStateChange()
     }
 
     //Write to the ConnectedThread in an unsynchronized manner
@@ -224,8 +224,8 @@ object BluetoothService {
         msg.data = bundle
         mHandler!!.sendMessage(msg)
         mState = STATE_NONE
-        // Update UI title
-        updateUserInterfaceTitle()
+
+        notifyStateChange()
 
         // Start the service over to restart listening mode
         start()
@@ -242,8 +242,8 @@ object BluetoothService {
         msg.data = bundle
         mHandler!!.sendMessage(msg)
         mState = STATE_NONE
-        // Update UI title
-        updateUserInterfaceTitle()
+
+        notifyStateChange()
 
         // Start the service over to restart listening mode
         start()
@@ -348,6 +348,8 @@ object BluetoothService {
         override fun run() {
             Log.i(TAG, "BEGIN mConnectThread SocketType:$mSocketType")
             name = "ConnectThread$mSocketType"
+
+            mHandler!!.obtainMessage(Constants.MESSAGE_FIRST_PLAYER, 1, -1).sendToTarget()
 
             // Always cancel discovery because it will slow down a connection
             mAdapter?.cancelDiscovery()
