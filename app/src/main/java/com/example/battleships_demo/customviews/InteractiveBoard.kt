@@ -46,13 +46,10 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
 
                     //Check whether to fill the box (set a ship) or put a cross (attack)
                     when (mWhatToDoOnTouch) {
-                        GameActivityConstants.DRAW_CROSS -> {
-                            mBoardState[cellX][cellY] = 1
-                        }
-                        GameActivityConstants.DRAW_SHIP_PART -> {
+                        Board.DRAW_CROSS -> {
                             mBoardState[cellX][cellY] = 2
                         }
-                        GameActivityConstants.DRAW_RED_SHIP_PART_WITH_CROSS -> {
+                        Board.DRAW_RED_SHIP_PART_WITH_CROSS -> {
                             mBoardState[cellX][cellY] = 3
                         }
                     }
@@ -76,16 +73,6 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
             }
         }
         invalidate()
-    }
-
-    fun getBoardStateAsString(): String? {
-        var boardState = ""
-        for (i in 0 until mBoardSize) {
-            for (j in 0 until mBoardSize) {
-                boardState += mBoardState[i][j].toString()
-            }
-        }
-        return boardState
     }
 
     fun getLastTouchInput(): Array<Int> {

@@ -26,6 +26,12 @@ open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     companion object {
         private const val TAG = "Board"
+        const val DRAW_CROSS = "drawCross"
+        const val DRAW_RED_SHIP_PART_WITH_CROSS = "drawRedShipPartWithCross"
+        const val EMPTY_BOX = 0
+        const val SHIP_PART = 1
+        const val CROSS = 2
+        const val SHIP_PART_HIT = 3
     }
 
     init {
@@ -111,6 +117,16 @@ open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
             mCellRect.top + 15,
             mDefRectPaint
         )
+    }
+
+    fun getBoardStateAsString(): String? {
+        var boardState = ""
+        for (i in 0 until mBoardSize) {
+            for (j in 0 until mBoardSize) {
+                boardState += mBoardState[i][j].toString()
+            }
+        }
+        return boardState
     }
 
     fun getBoardState(): Array<Array<Int>> {
