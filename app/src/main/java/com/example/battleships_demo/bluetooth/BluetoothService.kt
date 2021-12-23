@@ -54,15 +54,15 @@ object BluetoothService {
     }
 
     /**
-     * Update UI title according to the current state of the connection
+     * Notify user of the current state of the connection
      */
     @Synchronized
-    private fun updateUserInterfaceTitle() {
+    private fun notifyStateChange() {
         mState = getState()
-        Log.d(TAG, "updateUserInterfaceTitle() $mNewState -> $mState")
+        Log.d(TAG, "notifyStateChange() $mNewState -> $mState")
         mNewState = mState
 
-        // Give the new state to the Handler so the UI Activity can update
+        // Give the new state to the Handler
         mHandler!!.obtainMessage(Constants.MESSAGE_STATE_CHANGE, mNewState, -1).sendToTarget()
     }
 
@@ -101,8 +101,8 @@ object BluetoothService {
             mInsecureAcceptThread = AcceptThread(false)
             mInsecureAcceptThread!!.start()
         }
-        // Update UI title
-        updateUserInterfaceTitle()
+
+        notifyStateChange()
     }
 
     // Start the ConnectThread to initiate a connection to a remote device.
@@ -127,8 +127,8 @@ object BluetoothService {
         // Start the thread to connect with the given device
         mConnectThread = ConnectThread(device, secure)
         mConnectThread!!.start()
-        // Update UI title
-        updateUserInterfaceTitle()
+
+        notifyStateChange()
     }
 
     // Start the ConnectedThread to begin managing a Bluetooth connection
@@ -168,8 +168,8 @@ object BluetoothService {
         bundle.putString(Constants.DEVICE_NAME, device.name)
         msg.data = bundle
         mHandler!!.sendMessage(msg)
-        // Update UI title
-        updateUserInterfaceTitle()
+
+        notifyStateChange()
     }
 
     /**
@@ -195,8 +195,8 @@ object BluetoothService {
             mInsecureAcceptThread = null
         }
         mState = STATE_NONE
-        // Update UI title
-        updateUserInterfaceTitle()
+
+        notifyStateChange()
     }
 
     //Write to the ConnectedThread in an unsynchronized manner
@@ -223,8 +223,8 @@ object BluetoothService {
         msg.data = bundle
         mHandler!!.sendMessage(msg)
         mState = STATE_NONE
-        // Update UI title
-        updateUserInterfaceTitle()
+
+        notifyStateChange()
 
         // Start the service over to restart listening mode
         start()
@@ -241,8 +241,8 @@ object BluetoothService {
         msg.data = bundle
         mHandler!!.sendMessage(msg)
         mState = STATE_NONE
-        // Update UI title
-        updateUserInterfaceTitle()
+
+        notifyStateChange()
 
         // Start the service over to restart listening mode
         start()

@@ -22,7 +22,6 @@ class ConnectActivity : AppCompatActivity() {
     private var mConnectedDeviceName: String? = null
     private var mOutStringBuffer: StringBuffer? = null
     private var mBluetoothAdapter: BluetoothAdapter? = null
-    private var mService: BluetoothService? = null
 
     private lateinit var mTextName: TextView
 
@@ -85,7 +84,8 @@ class ConnectActivity : AppCompatActivity() {
                 when (msg.arg1) {
                 BluetoothService.STATE_CONNECTED -> {
                     setStatus("Connected to $mConnectedDeviceName")
-                    startActivity(Intent(this, PlaceShipsActivity::class.java))
+                    val intent = Intent(this, PlaceShipsActivity::class.java)
+                    startActivity(intent)
                     true
                 }
                 BluetoothService.STATE_CONNECTING -> {
