@@ -23,11 +23,16 @@ class ConnectActivity : AppCompatActivity() {
     private var mOutStringBuffer: StringBuffer? = null
     private var mBluetoothAdapter: BluetoothAdapter? = null
 
+    // The person who initiates a connection gets this variable set to 1
+    // which makes him player 1
+    private var mPlayerNum = 2
+
     private lateinit var mTextName: TextView
 
     companion object {
         private const val TAG = "ConnectActivity"
         private const val REQUEST_ENABLE_BT = 1
+        const val EXTRA_PLAYER_NUMBER = "playerNumber"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,11 +44,15 @@ class ConnectActivity : AppCompatActivity() {
         val manager = this.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         mBluetoothAdapter = manager.adapter
 
+        // This is a higher order function that runs a callback after we set the result
+        // from DeviceListActivity and finish() it
         val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            // Callback function:
             if (result.resultCode == RESULT_OK){
                 connectDevice(result.data, true)
             }
         }
+
 
         findViewById<Button>(R.id.btn_connect).setOnClickListener {
             val intent = Intent(this, DeviceListActivity::class.java)
@@ -81,10 +90,12 @@ class ConnectActivity : AppCompatActivity() {
     private val mHandler = Handler(Looper.getMainLooper()) { msg ->
         when (msg.what) {
             Constants.MESSAGE_STATE_CHANGE ->
+                // I pass mState as arg1 in BluetoothService
                 when (msg.arg1) {
                 BluetoothService.STATE_CONNECTED -> {
                     setStatus("Connected to $mConnectedDeviceName")
                     val intent = Intent(this, PlaceShipsActivity::class.java)
+                    intent.putExtra(EXTRA_PLAYER_NUMBER, mPlayerNum)
                     startActivity(intent)
                     true
                 }
@@ -99,6 +110,10 @@ class ConnectActivity : AppCompatActivity() {
                 }
                 else -> false
             }
+            Constants.MESSAGE_FIRST_PLAYER -> {
+                mPlayerNum = msg.arg1
+                true
+            }
             Constants.MESSAGE_WRITE -> {
                 val writeBuf = msg.obj as ByteArray
                 // construct a string from the buffer
@@ -112,7 +127,7 @@ class ConnectActivity : AppCompatActivity() {
                 Log.d(TAG, "reading message: $readMessage")
                 true
             }
-            Constants.MESSAGE_DEVICE_NAME -> {
+            Constants.MESSAGE_DEVICE -> {
                 // save the connected device's name
                 mConnectedDeviceName = msg.data.getString(Constants.DEVICE_NAME)
                 Toast.makeText(
