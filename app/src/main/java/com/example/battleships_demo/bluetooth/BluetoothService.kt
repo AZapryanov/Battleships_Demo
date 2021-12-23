@@ -219,10 +219,6 @@ object BluetoothService {
         r!!.write(out)
     }
 
-    fun setPlayer1Ready(){
-
-    }
-
     /**
      * Indicate that the connection attempt failed and notify the UI Activity.
      */
