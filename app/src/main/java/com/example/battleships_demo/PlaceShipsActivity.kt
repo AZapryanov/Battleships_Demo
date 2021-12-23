@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.Button
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.customviews.EditableBoard
+import kotlin.coroutines.*
 
 class PlaceShipsActivity : AppCompatActivity() {
 
@@ -35,6 +36,11 @@ class PlaceShipsActivity : AppCompatActivity() {
             if (hasClickedReady){
                 return@setOnClickListener
             }
+            hasClickedReady = true
+
+            CoroutineScope(Dispatchers.IO).launch {
+                fakeApiRequest()
+            }
 
             BluetoothService.write(mBoard.getBoardStateAsString()!!.toByteArray())
 
@@ -45,7 +51,12 @@ class PlaceShipsActivity : AppCompatActivity() {
                 1 -> intent.putExtra(EXTRA_IS_PLAYER_ONE, true)
                 2 -> intent.putExtra(EXTRA_IS_PLAYER_ONE, false)
             }
+
             startActivity(intent)
         }
+    }
+
+    private suspend fun waitForPlayer(){
+
     }
 }
