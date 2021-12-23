@@ -118,6 +118,7 @@ class ConnectActivity : AppCompatActivity() {
                 val writeBuf = msg.obj as ByteArray
                 // construct a string from the buffer
                 val writeMessage = String(writeBuf)
+                BluetoothService.mMyBoard = writeMessage
                 true
             }
             Constants.MESSAGE_READ -> {
@@ -125,6 +126,7 @@ class ConnectActivity : AppCompatActivity() {
                 // construct a string from the valid bytes in the buffer
                 val readMessage = String(readBuf, 0, msg.arg1)
                 Log.d(TAG, "reading message: $readMessage")
+                BluetoothService.mEnemyBoard = readMessage
                 true
             }
             Constants.MESSAGE_DEVICE -> {

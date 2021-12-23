@@ -41,8 +41,8 @@ object BluetoothService {
     private var mState = 0
     private var mNewState = 0
 
-    var player1Ready = false
-    var player2Ready = false
+    var mMyBoard: String? = null
+    var mEnemyBoard: String? = null
 
     // Acts as constructor. Prepares a new Bluetooth session.
     fun init(context: Context, handler: Handler){
@@ -348,7 +348,7 @@ object BluetoothService {
             Log.i(TAG, "BEGIN mConnectThread SocketType:$mSocketType")
             name = "ConnectThread$mSocketType"
 
-            mHandler!!.obtainMessage(Constants.MESSAGE_FIRST_PLAYER, 1, -1)
+            mHandler!!.obtainMessage(Constants.MESSAGE_FIRST_PLAYER, 1, -1).sendToTarget()
 
             // Always cancel discovery because it will slow down a connection
             mAdapter?.cancelDiscovery()
