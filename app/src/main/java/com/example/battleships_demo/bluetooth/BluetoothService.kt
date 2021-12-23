@@ -162,8 +162,8 @@ object BluetoothService {
         mConnectedThread = ConnectedThread(socket, socketType)
         mConnectedThread!!.start()
 
-        // Send the name of the connected device back to the UI Activity
-        val msg = mHandler!!.obtainMessage(Constants.MESSAGE_DEVICE_NAME)
+        // Send the connected device back to the UI Activity
+        val msg = mHandler!!.obtainMessage(Constants.MESSAGE_DEVICE)
         val bundle = Bundle()
         bundle.putString(Constants.DEVICE_NAME, device.name)
         msg.data = bundle
@@ -347,6 +347,8 @@ object BluetoothService {
         override fun run() {
             Log.i(TAG, "BEGIN mConnectThread SocketType:$mSocketType")
             name = "ConnectThread$mSocketType"
+
+            mHandler!!.obtainMessage(Constants.MESSAGE_FIRST_PLAYER, 1, -1)
 
             // Always cancel discovery because it will slow down a connection
             mAdapter?.cancelDiscovery()
