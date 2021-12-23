@@ -45,6 +45,10 @@ object BluetoothService {
     var mMyBoard: String? = null
     var mEnemyBoard: String? = null
 
+    fun clearMReceivedMessage() {
+        mReceivedMessage = ""
+    }
+
     // Acts as constructor. Prepares a new Bluetooth session.
     fun init(context: Context, handler: Handler){
         val manager = context.getSystemService(AppCompatActivity.BLUETOOTH_SERVICE) as BluetoothManager

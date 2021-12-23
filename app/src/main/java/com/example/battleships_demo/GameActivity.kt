@@ -122,6 +122,7 @@ class GameActivity : AppCompatActivity() {
                         break
                     }
                 }
+                BluetoothService.clearMReceivedMessage()
                 mOpponentAttackCoordinates.value = receivedAttackAsArray
             }
         }
