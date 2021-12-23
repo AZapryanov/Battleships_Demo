@@ -19,6 +19,7 @@ class PlaceShipsActivity : AppCompatActivity() {
 
     private var mPlayerNum: Int = 0
     private lateinit var mBoard: EditableBoard
+    private var hasClickedReady = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,8 +31,10 @@ class PlaceShipsActivity : AppCompatActivity() {
 
         val myShipsAsString = mBoard.getBoardStateAsString()
 
-
         findViewById<Button>(R.id.btn_ready).setOnClickListener {
+            if (hasClickedReady){
+                return@setOnClickListener
+            }
 
             BluetoothService.write(mBoard.getBoardStateAsString()!!.toByteArray())
 
