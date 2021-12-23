@@ -109,6 +109,7 @@ class ConnectActivity : AppCompatActivity() {
                 val readBuf = msg.obj as ByteArray
                 // construct a string from the valid bytes in the buffer
                 val readMessage = String(readBuf, 0, msg.arg1)
+                BluetoothService.mReceivedMessage = readMessage
                 Log.d(TAG, "reading message: $readMessage")
                 true
             }

@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
+import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.customviews.Board
 import kotlinx.android.synthetic.main.activity_game.*
 
@@ -21,8 +22,13 @@ class GameActivity : AppCompatActivity() {
     private val mIsMyTurn: MutableLiveData<Boolean> by lazy {
         MutableLiveData<Boolean>()
     }
+
     private val mShouldReceiveOpponentAttack: MutableLiveData<Boolean> by lazy {
         MutableLiveData<Boolean>()
+    }
+
+    private val mOpponentAttackCoordinates: MutableLiveData<Array<Int>> by lazy {
+        MutableLiveData<Array<Int>>()
     }
 
     private var mIsPlayerOne = true
@@ -31,7 +37,6 @@ class GameActivity : AppCompatActivity() {
     private lateinit var mEnemyShipsPositions: Array<Array<Int>>
     private lateinit var mMyAttacksPositionsFromPreviousRound: Array<Array<Int>>
     private lateinit var mMyShipsPositionsFromPreviousRound: Array<Array<Int>>
-    private var mOpponentAttackCoordinates = Array(2) { 0 }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,8 +66,8 @@ class GameActivity : AppCompatActivity() {
             //My ships are updated based on the received attack coordinated from the opponent
             if (mIsNotFirstTurn) {
                 val opponentAttackCoordinates = mOpponentAttackCoordinates
-                val updatedMyShips = updateState(opponentAttackCoordinates, mMyShipsPositionsFromPreviousRound)
-                cvMyShips.setBoardState(updatedMyShips)
+                val updatedBoardState = updateState(opponentAttackCoordinates.value, mMyShipsPositionsFromPreviousRound)
+                cvMyShips.setBoardState(updatedBoardState)
 
                 mIsEndgame = checkIfGameHasEnded(cvMyShips.getBoardState())
                 if (mIsEndgame) {
@@ -84,8 +89,8 @@ class GameActivity : AppCompatActivity() {
             val myAttackCoordinates = cvMyAttacks.getLastTouchInput()
 
             //My attack board is updated based on my attack coordinates and whether is a hit or miss
-            val updatedMyAttacks = updateState(myAttackCoordinates, mMyAttacksPositionsFromPreviousRound)
-            cvMyAttacks.setBoardState(updatedMyAttacks)
+            val updatedBoardState = updateState(myAttackCoordinates, mMyAttacksPositionsFromPreviousRound)
+            cvMyAttacks.setBoardState(updatedBoardState)
             mMyAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
 
             mIsEndgame = checkIfGameHasEnded(cvMyAttacks.getBoardState())
@@ -97,41 +102,49 @@ class GameActivity : AppCompatActivity() {
             }
 
             //Send my attack coordinates as array to other player through BT
-            //For test purposes:
+            var attackCoordinatesToSendThroughBt = ""
+            attackCoordinatesToSendThroughBt += myAttackCoordinates[0].toString()
+            attackCoordinatesToSendThroughBt += myAttackCoordinates[1].toString()
+            BluetoothService.write(attackCoordinatesToSendThroughBt.toByteArray())
+
+
             if (!mIsEndgame) {
-                mShouldReceiveOpponentAttack.value = !mShouldReceiveOpponentAttack.equals(true)
+                var receivedAttackThroughBt = ""
+                val receivedAttackAsArray = Array(2) {0}
+                //Waiting to receive opponent attack coordinates and to start my turn
+                while(true) {
+                    receivedAttackThroughBt = BluetoothService.mReceivedMessage
+
+                    if(receivedAttackThroughBt.length > 1) {
+                        receivedAttackAsArray[0] = receivedAttackThroughBt[0].digitToInt()
+                        receivedAttackAsArray[1] = receivedAttackThroughBt[1].digitToInt()
+                        break
+                    }
+                }
+                mOpponentAttackCoordinates.value = receivedAttackAsArray
             }
 
         }
 
-        mShouldReceiveOpponentAttack.observe(this, {
-            mOpponentAttackCoordinates = generateRandomOpponentAttack()
+        mOpponentAttackCoordinates.observe(this, {
             mIsMyTurn.value = !mIsMyTurn.equals(true)
         })
     }
 
-    private fun generateRandomOpponentAttack(): Array<Int> {
-        val coordinates = Array(2) { 0 }
-        coordinates[0] = (0..9).random()
-        coordinates[1] = (0..9).random()
-        return coordinates
-    }
-
     private fun updateState(
-        myAttackCoordinates: Array<Int>,
-        stateFromPreviousRound: Array<Array<Int>>
+        attackCoordinates: Array<Int>?,
+        updatedBoardState: Array<Array<Int>>
     ): Array<Array<Int>> {
-        val currentAttackX = myAttackCoordinates[0]
-        val currentAttackY = myAttackCoordinates[1]
+        val currentAttackX = attackCoordinates!![0]
+        val currentAttackY = attackCoordinates[1]
 
         if (mEnemyShipsPositions[currentAttackX][currentAttackY] == Board.EMPTY_BOX) {
-            stateFromPreviousRound[currentAttackX][currentAttackY] = Board.CROSS
+            updatedBoardState[currentAttackX][currentAttackY] = Board.CROSS
 
         } else if (mEnemyShipsPositions[currentAttackX][currentAttackY] == Board.SHIP_PART) {
-            stateFromPreviousRound[currentAttackX][currentAttackY] = Board.SHIP_PART_HIT
+            updatedBoardState[currentAttackX][currentAttackY] = Board.SHIP_PART_HIT
         }
-
-        return stateFromPreviousRound
+        return updatedBoardState
     }
 
     private fun checkIfGameHasEnded(shipsBoard: Array<Array<Int>>): Boolean {

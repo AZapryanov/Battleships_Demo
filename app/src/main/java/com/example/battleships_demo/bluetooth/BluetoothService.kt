@@ -40,6 +40,7 @@ object BluetoothService {
     private var mConnectedThread: ConnectedThread? = null
     private var mState = 0
     private var mNewState = 0
+    var mReceivedMessage = ""
 
     var player1Ready = false
     var player2Ready = false
@@ -428,7 +429,7 @@ object BluetoothService {
                     // Read from the InputStream
                     bytes = mmInStream!!.read(buffer)
 
-                    // Send the obtained bytes to the UI Activity
+                    // Send the obtained bytes
                     mHandler?.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer)
                         ?.sendToTarget()
                 } catch (e: IOException) {
