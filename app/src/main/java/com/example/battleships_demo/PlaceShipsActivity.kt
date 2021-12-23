@@ -18,7 +18,7 @@ class PlaceShipsActivity : AppCompatActivity() {
 
 
             if (BluetoothService.player1Ready && BluetoothService.player2Ready){
-                startActivity(Intent(this, PlayActivity::class.java))
+                startActivity(Intent(this, GameActivity::class.java))
             }
         }
     }
