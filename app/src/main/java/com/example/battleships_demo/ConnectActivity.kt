@@ -23,8 +23,6 @@ class ConnectActivity : AppCompatActivity() {
     private var mOutStringBuffer: StringBuffer? = null
     private var mBluetoothAdapter: BluetoothAdapter? = null
     private var mService: BluetoothService? = null
-    // Temporary variable for testing data transmissions
-    private var mMessages: ArrayList<String> = ArrayList()
 
     private lateinit var mTextName: TextView
 
@@ -87,7 +85,7 @@ class ConnectActivity : AppCompatActivity() {
                 when (msg.arg1) {
                 BluetoothService.STATE_CONNECTED -> {
                     setStatus("Connected to $mConnectedDeviceName")
-                    mMessages.clear()
+                    startActivity(Intent(this, PlaceShipsActivity::class.java))
                     true
                 }
                 BluetoothService.STATE_CONNECTING -> {
@@ -105,7 +103,7 @@ class ConnectActivity : AppCompatActivity() {
                 val writeBuf = msg.obj as ByteArray
                 // construct a string from the buffer
                 val writeMessage = String(writeBuf)
-                mMessages.add(writeMessage)
+                true
             }
             Constants.MESSAGE_READ -> {
                 val readBuf = msg.obj as ByteArray
@@ -117,7 +115,8 @@ class ConnectActivity : AppCompatActivity() {
             Constants.MESSAGE_DEVICE_NAME -> {
                 // save the connected device's name
                 mConnectedDeviceName = msg.data.getString(Constants.DEVICE_NAME)
-                Toast.makeText(this, "Connected to $mConnectedDeviceName", Toast.LENGTH_SHORT
+                Toast.makeText(
+                    this, "Connected to $mConnectedDeviceName", Toast.LENGTH_SHORT
                 ).show()
                 true
             }
