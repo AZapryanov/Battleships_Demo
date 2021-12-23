@@ -16,7 +16,7 @@ object BluetoothService {
 
     // Debugging
     private const val TAG = "BluetoothChatService"
-    // Constants that indicate the current connection state
+    // GameActivityConstants that indicate the current connection state
     const val STATE_NONE = 0 // we're doing nothing
     const val STATE_LISTEN = 1 // now listening for incoming connections
     const val STATE_CONNECTING = 2 // now initiating an outgoing connection

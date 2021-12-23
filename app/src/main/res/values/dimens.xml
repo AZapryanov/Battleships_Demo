@@ -2,4 +2,6 @@
 <resources>
     <dimen name="editable_board_width">400dp</dimen>
     <dimen name="editable_board_height">550dp</dimen>
+    <dimen name="square_size">100dp</dimen>
+    <dimen name="interactive_board_size">300dp</dimen>
 </resources>

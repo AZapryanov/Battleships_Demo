@@ -19,6 +19,9 @@ open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
     protected val mDefRectPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     protected val mGreenPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
+    // Used to fill boxes with already attacked ship parts in them
+    private val mRedPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+
     protected var mCellRect: RectF
 
     companion object {
@@ -48,11 +51,10 @@ open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
         mGreenPaint.style = Paint.Style.FILL
         mGreenPaint.color = Color.GREEN
 
-        mCellRect = RectF()
-    }
+        mRedPaint.style = Paint.Style.FILL
+        mRedPaint.color = Color.RED
 
-    fun getBoardState(): Array<Array<Int>> {
-        return mBoardState
+        mCellRect = RectF()
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -73,12 +75,45 @@ open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
                 val bottom = top + mCellHeight
                 mCellRect.set(left, top, right, bottom)
 
-                if (mBoardState[i][j] == 0) {
-                    canvas?.drawRect(mCellRect, mDefRectPaint)
-                } else if (mBoardState[i][j] == 1){
-                    canvas?.drawRect(mCellRect, mGreenPaint)
+                when {
+                    mBoardState[i][j] == 0 -> {
+                        canvas?.drawRect(mCellRect, mDefRectPaint)
+                    }
+                    mBoardState[i][j] == 1 -> {
+                        canvas?.drawRect(mCellRect, mGreenPaint)
+                    }
+                    mBoardState[i][j] == 2 -> {
+                        canvas?.drawRect(mCellRect,mDefRectPaint)
+                        drawCross(canvas)
+                    }
+                    mBoardState[i][j] == 3 -> {
+                        canvas?.drawRect(mCellRect, mRedPaint)
+                        canvas?.drawRect(mCellRect, mDefRectPaint)
+                        drawCross(canvas)
+                    }
                 }
             }
         }
+    }
+
+    private fun drawCross(canvas: Canvas?) {
+        canvas?.drawLine(
+            mCellRect.left + 15,
+            mCellRect.top + 15,
+            mCellRect.right - 15,
+            mCellRect.bottom - 15,
+            mDefRectPaint
+        )
+        canvas?.drawLine(
+            mCellRect.left + 15,
+            mCellRect.bottom - 15,
+            mCellRect.right - 15,
+            mCellRect.top + 15,
+            mDefRectPaint
+        )
+    }
+
+    fun getBoardState(): Array<Array<Int>> {
+        return mBoardState
     }
 }
