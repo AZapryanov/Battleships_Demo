@@ -15,8 +15,8 @@ import java.util.*
 object BluetoothService {
 
     // Debugging
-    private const val TAG = "BluetoothChatService"
-    // GameActivityConstants that indicate the current connection state
+    private const val TAG = "BluetoothService"
+    // Constants that indicate the current connection state
     const val STATE_NONE = 0 // we're doing nothing
     const val STATE_LISTEN = 1 // now listening for incoming connections
     const val STATE_CONNECTING = 2 // now initiating an outgoing connection
@@ -24,8 +24,8 @@ object BluetoothService {
 
 
     // Name for the SDP record when creating server socket
-    private val NAME_SECURE = "BluetoothChatSecure"
-    private val NAME_INSECURE = "BluetoothChatInsecure"
+    private val NAME_SECURE = "BluetoothSecure"
+    private val NAME_INSECURE = "BluetoothInsecure"
 
     // Unique UUID for this application
     private val MY_UUID_SECURE = UUID.fromString("5e51c389-e382-4acf-9089-c4d6d1d4c31b")
@@ -40,6 +40,9 @@ object BluetoothService {
     private var mConnectedThread: ConnectedThread? = null
     private var mState = 0
     private var mNewState = 0
+
+    var player1Ready = false
+    var player2Ready = false
 
     // Acts as constructor. Prepares a new Bluetooth session.
     fun init(context: Context, handler: Handler){
@@ -224,7 +227,7 @@ object BluetoothService {
         updateUserInterfaceTitle()
 
         // Start the service over to restart listening mode
-        BluetoothService.start()
+        start()
     }
 
     /**
@@ -242,7 +245,7 @@ object BluetoothService {
         updateUserInterfaceTitle()
 
         // Start the service over to restart listening mode
-        BluetoothService.start()
+        start()
     }
 
     /**
