@@ -7,6 +7,9 @@ import android.util.Log
 import android.widget.Button
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.customviews.EditableBoard
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.coroutines.*
 
 class PlaceShipsActivity : AppCompatActivity() {
@@ -20,7 +23,8 @@ class PlaceShipsActivity : AppCompatActivity() {
 
     private var mPlayerNum: Int = 0
     private lateinit var mBoard: EditableBoard
-    private var hasClickedReady = false
+    private var mHasClickedReady = false
+    private lateinit var mMyShipsAsString: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,33 +34,43 @@ class PlaceShipsActivity : AppCompatActivity() {
         mBoard = findViewById(R.id.editable_board)
         Log.d(TAG, "onCreate: Player: $mPlayerNum")
 
-        val myShipsAsString = mBoard.getBoardStateAsString()
-
         findViewById<Button>(R.id.btn_ready).setOnClickListener {
-            if (hasClickedReady){
+            if (mHasClickedReady){
                 return@setOnClickListener
             }
-            hasClickedReady = true
+            mHasClickedReady = true
+            mMyShipsAsString = mBoard.getBoardStateAsString()!!
 
-            CoroutineScope(Dispatchers.IO).launch {
-                fakeApiRequest()
+            when(mPlayerNum){
+                1 -> BluetoothService.mP1Ready = true
+                2 -> BluetoothService.mP2Ready = true
             }
 
             BluetoothService.write(mBoard.getBoardStateAsString()!!.toByteArray())
 
-            val intent = Intent(this, GameActivity::class.java)
-            intent.putExtra(EXTRA_MY_SHIPS, myShipsAsString)
-            intent.putExtra(EXTRA_ENEMY_SHIPS, myShipsAsString)
-            when(mPlayerNum){
-                1 -> intent.putExtra(EXTRA_IS_PLAYER_ONE, true)
-                2 -> intent.putExtra(EXTRA_IS_PLAYER_ONE, false)
+            CoroutineScope(Dispatchers.IO).launch {
+                startGameActivity()
             }
-
-            startActivity(intent)
         }
     }
 
-    private suspend fun waitForPlayer(){
+    private suspend fun startGameActivity(){
+        waitForPlayer()
 
+        val intent = Intent(this, GameActivity::class.java)
+        intent.putExtra(EXTRA_MY_SHIPS, mMyShipsAsString)
+        intent.putExtra(EXTRA_ENEMY_SHIPS, BluetoothService.mEnemyBoard)
+        when(mPlayerNum){
+            1 -> intent.putExtra(EXTRA_IS_PLAYER_ONE, true)
+            2 -> intent.putExtra(EXTRA_IS_PLAYER_ONE, false)
+        }
+
+        startActivity(intent)
+    }
+
+    private suspend fun waitForPlayer(){
+        while(!(BluetoothService.mP1Ready && BluetoothService.mP2Ready)){
+            continue
+        }
     }
 }
