@@ -44,6 +44,8 @@ object BluetoothService {
     var mReceivedMessage = ""
     var mMyBoard: String? = null
     var mEnemyBoard: String? = null
+    var mP1Ready = false
+    var mP2Ready = false
 
     fun clearMReceivedMessage() {
         mReceivedMessage = ""
@@ -215,6 +217,10 @@ object BluetoothService {
         }
         // Perform the write unsynchronized
         r!!.write(out)
+    }
+
+    fun setPlayer1Ready(){
+
     }
 
     /**
