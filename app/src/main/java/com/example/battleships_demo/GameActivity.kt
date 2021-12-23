@@ -39,12 +39,12 @@ class GameActivity : AppCompatActivity() {
 
         //The following block is executed only one time at the start of the game
         //------------------------------------
-        val myShipsPositionsFromIntent = intent.getStringExtra("myShips")
-        mEnemyShipsPositions = transformStringToIntMatrix(intent.getStringExtra("enemyShips"))
+        val myShipsPositionsFromIntent = intent.getStringExtra(PlaceShipsActivity.EXTRA_MY_SHIPS)
+        mEnemyShipsPositions = transformStringToIntMatrix(intent.getStringExtra(PlaceShipsActivity.EXTRA_ENEMY_SHIPS))
         mMyShipsPositionsFromPreviousRound = transformStringToIntMatrix(myShipsPositionsFromIntent)
         mMyAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
 
-        mIsPlayerOne = intent.getBooleanExtra("isPlayerOneOrTwo", false)
+        mIsPlayerOne = intent.getBooleanExtra(PlaceShipsActivity.EXTRA_IS_PLAYER_ONE, false)
         cvMyShips.setBoardState(mMyShipsPositionsFromPreviousRound)
 
         if (mIsPlayerOne) {
