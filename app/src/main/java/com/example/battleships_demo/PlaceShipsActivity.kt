@@ -12,8 +12,6 @@ class PlaceShipsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_place_ships)
 
-        intent.extras
-
         findViewById<Button>(R.id.btn_ready).setOnClickListener {
 
 
