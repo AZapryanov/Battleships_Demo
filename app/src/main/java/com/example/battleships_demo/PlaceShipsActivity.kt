@@ -21,12 +21,7 @@ class PlaceShipsActivity : AppCompatActivity() {
         const val EXTRA_ENEMY_SHIPS = "enemyShips"
         const val EXTRA_IS_PLAYER_ONE = "isPlayerOneOrTwo"
 
-        // For bt handler to handle players
-        const val WRITE_PLAYER1_READY = "player1Ready"
-        const val WRITE_PLAYER2_READY = "player2Ready"
-
-        var mP1Ready = false
-        var mP2Ready = false
+        var otherPlayerReady = false
     }
 
     private var mPlayerNum: Int = 0
@@ -49,11 +44,6 @@ class PlaceShipsActivity : AppCompatActivity() {
             mHasClickedReady = true
             mMyShipsAsString = mBoard.getBoardStateAsString()!!
 
-            when(mPlayerNum){
-                1 -> BluetoothService.write(WRITE_PLAYER1_READY.toByteArray())
-                2 -> BluetoothService.write(WRITE_PLAYER2_READY.toByteArray())
-            }
-
             // Send your board to the other player
             BluetoothService.write(mBoard.getBoardStateAsString()!!.toByteArray())
 
@@ -64,6 +54,7 @@ class PlaceShipsActivity : AppCompatActivity() {
     }
 
     private suspend fun startGameActivity(){
+        Log.d(TAG, "startGameActivity():")
         waitForPlayer()
 
         val intent = Intent(this, GameActivity::class.java)
@@ -79,7 +70,7 @@ class PlaceShipsActivity : AppCompatActivity() {
 
     private suspend fun waitForPlayer(){
         // Wait for the other player to press ready
-        while(!(mP1Ready && mP2Ready)){
+        while(!otherPlayerReady){
             continue
         }
     }
