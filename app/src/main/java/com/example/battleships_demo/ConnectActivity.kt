@@ -121,11 +121,9 @@ class ConnectActivity : AppCompatActivity() {
                 when(writeMessage){
                     PlaceShipsActivity.WRITE_PLAYER1_READY -> {
                         PlaceShipsActivity.mP1Ready = true
-                        return@Handler true
                     }
                     PlaceShipsActivity.WRITE_PLAYER2_READY -> {
                         PlaceShipsActivity.mP1Ready = true
-                        return@Handler true
                     }
                 }
 
@@ -136,23 +134,20 @@ class ConnectActivity : AppCompatActivity() {
                 val readBuf = msg.obj as ByteArray
                 // construct a string from the valid bytes in the buffer
                 val readMessage = String(readBuf, 0, msg.arg1)
+                val shitString: String = readMessage.removeRange(0, PlaceShipsActivity.WRITE_PLAYER1_READY.length)
 
                 Log.d(TAG, "reading message: $readMessage")
-                when(readMessage){
-                    PlaceShipsActivity.WRITE_PLAYER1_READY -> {
-                        PlaceShipsActivity.mP1Ready = true
-                        return@Handler true
-                    }
-                    PlaceShipsActivity.WRITE_PLAYER2_READY -> {
-                        PlaceShipsActivity.mP2Ready = true
-                        return@Handler true
-                    }
+                if(readMessage.startsWith(PlaceShipsActivity.WRITE_PLAYER1_READY)){
+                    PlaceShipsActivity.mP1Ready = true
+                }
+                else if(readMessage.startsWith(PlaceShipsActivity.WRITE_PLAYER2_READY)){
+                    PlaceShipsActivity.mP2Ready = true
                 }
 
                 // This gets single coordinates from an attack
                 BluetoothService.mReceivedMessage = readMessage
                 // This is used once for transferring initial boards
-                BluetoothService.mEnemyBoard = readMessage
+                BluetoothService.mEnemyBoard = shitString
                 true
             }
             Constants.MESSAGE_DEVICE -> {
