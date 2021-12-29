@@ -45,10 +45,6 @@ object BluetoothService {
     var mMyBoard: String? = null
     var mEnemyBoard: String? = null
 
-    // These are for the place ships activity
-    var mP1Ready = false
-    var mP2Ready = false
-
     fun clearMReceivedMessage() {
         mReceivedMessage = ""
     }

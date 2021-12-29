@@ -16,11 +16,17 @@ class PlaceShipsActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "PlaceShipsActivity"
-        const val WRITE_PLAYER1_READY = "player1Ready"
-        const val WRITE_PLAYER2_READY = "player2Ready"
+        // Intent extras
         const val EXTRA_MY_SHIPS = "myShips"
         const val EXTRA_ENEMY_SHIPS = "enemyShips"
         const val EXTRA_IS_PLAYER_ONE = "isPlayerOneOrTwo"
+
+        // For bt handler to handle players
+        const val WRITE_PLAYER1_READY = "player1Ready"
+        const val WRITE_PLAYER2_READY = "player2Ready"
+
+        var mP1Ready = false
+        var mP2Ready = false
     }
 
     private var mPlayerNum: Int = 0
@@ -70,7 +76,7 @@ class PlaceShipsActivity : AppCompatActivity() {
 
     private suspend fun waitForPlayer(){
         // Wait for the other player to press ready
-        while(!(BluetoothService.mP1Ready && BluetoothService.mP2Ready)){
+        while(!(mP1Ready && mP2Ready)){
             continue
         }
         // Send your board to the other player

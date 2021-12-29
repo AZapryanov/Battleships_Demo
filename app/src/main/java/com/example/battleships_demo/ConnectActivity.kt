@@ -120,11 +120,11 @@ class ConnectActivity : AppCompatActivity() {
 
                 when(writeMessage){
                     PlaceShipsActivity.WRITE_PLAYER1_READY -> {
-                        BluetoothService.mP1Ready = true
+                        PlaceShipsActivity.mP1Ready = true
                         return@Handler true
                     }
                     PlaceShipsActivity.WRITE_PLAYER2_READY -> {
-                        BluetoothService.mP1Ready = true
+                        PlaceShipsActivity.mP1Ready = true
                         return@Handler true
                     }
                 }
@@ -140,11 +140,11 @@ class ConnectActivity : AppCompatActivity() {
                 Log.d(TAG, "reading message: $readMessage")
                 when(readMessage){
                     PlaceShipsActivity.WRITE_PLAYER1_READY -> {
-                        BluetoothService.mP1Ready = true
+                        PlaceShipsActivity.mP1Ready = true
                         return@Handler true
                     }
                     PlaceShipsActivity.WRITE_PLAYER2_READY -> {
-                        BluetoothService.mP2Ready = true
+                        PlaceShipsActivity.mP2Ready = true
                         return@Handler true
                     }
                 }
