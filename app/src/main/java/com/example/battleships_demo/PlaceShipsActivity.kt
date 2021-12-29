@@ -16,6 +16,8 @@ class PlaceShipsActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "PlaceShipsActivity"
+        const val WRITE_PLAYER1_READY = "player1Ready"
+        const val WRITE_PLAYER2_READY = "player2Ready"
         const val EXTRA_MY_SHIPS = "myShips"
         const val EXTRA_ENEMY_SHIPS = "enemyShips"
         const val EXTRA_IS_PLAYER_ONE = "isPlayerOneOrTwo"
@@ -42,11 +44,9 @@ class PlaceShipsActivity : AppCompatActivity() {
             mMyShipsAsString = mBoard.getBoardStateAsString()!!
 
             when(mPlayerNum){
-                1 -> BluetoothService.mP1Ready = true
-                2 -> BluetoothService.mP2Ready = true
+                1 -> BluetoothService.write(WRITE_PLAYER1_READY.toByteArray())
+                2 -> BluetoothService.write(WRITE_PLAYER2_READY.toByteArray())
             }
-
-            BluetoothService.write(mBoard.getBoardStateAsString()!!.toByteArray())
 
             CoroutineScope(Dispatchers.IO).launch {
                 startGameActivity()
@@ -69,8 +69,11 @@ class PlaceShipsActivity : AppCompatActivity() {
     }
 
     private suspend fun waitForPlayer(){
+        // Wait for the other player to press ready
         while(!(BluetoothService.mP1Ready && BluetoothService.mP2Ready)){
             continue
         }
+        // Send your board to the other player
+        BluetoothService.write(mBoard.getBoardStateAsString()!!.toByteArray())
     }
 }
