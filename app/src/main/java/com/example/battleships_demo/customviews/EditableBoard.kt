@@ -1,13 +1,14 @@
 package com.example.battleships_demo.customviews
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Rect
-import android.graphics.RectF
+import android.graphics.*
+import android.graphics.Paint.ANTI_ALIAS_FLAG
+import android.graphics.fonts.Font
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import androidx.core.view.marginTop
+import java.util.*
 
 class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attrs) {
     companion object{
@@ -17,13 +18,24 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
     private val mShip5 = RectF()
     private val mShip4 = RectF()
     private val mShip3 = RectF()
+    private val m2ndShip3 = RectF()
     private val mShip2 = RectF()
     private var mTmpRect = RectF()
 
     private var mShipTouched = 0
+    private var m3shipsLeft = 2
+    private var textPos = Array(2) {0f}
 
     private val mMarginTop = 60
     private val mMarginLeft = 30
+
+    private val mTextPaint = Paint(ANTI_ALIAS_FLAG)
+
+    init {
+        mTextPaint.style = Paint.Style.FILL
+        mTextPaint.color = Color.BLACK
+        mTextPaint.textSize = 70f
+    }
 
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -41,10 +53,13 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
 
         // Second row
         x = 0f
-        y = mShip5.top + mShip5.height() + mMarginTop
+        y = mShip5.bottom + mMarginTop
         mShip3.set(x, y, x+(mCellWidth*3), y+mCellHeight)
+        m2ndShip3.set(x, y, x+(mCellWidth*3), y+mCellHeight)
+        textPos[0] = mShip3.right + 20
+        textPos[1] = mShip3.bottom
 
-        x = mShip3.right + mMarginLeft
+        x = mShip4.left
         mShip2.set(x, y, x+(mCellWidth*2), y+mCellHeight)
     }
 
@@ -71,6 +86,12 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                     Log.d(TAG, "onTouchEvent: ship3 touched")
                     mShipTouched = 3
                     value = true
+                } else if(m2ndShip3.contains(x, y)) {
+                    Log.d(TAG, "onTouchEvent: 2ndShip3 touched")
+                    if(mShip3.isEmpty) {
+                        mShipTouched = 3_2
+                        value = true
+                    }
                 } else if (mShip2.contains(x, y)) {
                     Log.d(TAG, "onTouchEvent: ship2 touched")
                     mShipTouched = 2
@@ -109,6 +130,13 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                         mShip3.set(mTmpRect)
                         value = true
                     }
+                    3_2 -> {
+                        mTmpRect.right = mTmpRect.left + m2ndShip3.width()
+                        mTmpRect.bottom = mTmpRect.top + m2ndShip3.height()
+
+                        m2ndShip3.set(mTmpRect)
+                        value = true
+                    }
                     2 -> {
                         mTmpRect.right = mTmpRect.left + mShip2.width()
                         mTmpRect.bottom = mTmpRect.top + mShip2.height()
@@ -125,6 +153,10 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                 val xInBoardSpace = (x!! / mCellWidth).toInt()
                 val yInBoardSpace = (y!! / mCellHeight).toInt()
 
+                if(mShipTouched == 3_2) {
+                    mShipTouched = 3
+                    m2ndShip3.setEmpty()
+                }
                 for(i in 0 until mShipTouched){
                     mBoardState[xInBoardSpace + i][yInBoardSpace] = 1
                 }
@@ -132,7 +164,7 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                 when(mShipTouched){
                     5 -> {mShip5.setEmpty()}
                     4 -> {mShip4.setEmpty()}
-                    3 -> {mShip3.setEmpty()}
+                    3 -> {mShip3.setEmpty(); m3shipsLeft--}
                     2 -> {mShip2.setEmpty()}
                 }
 
@@ -151,6 +183,9 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
         canvas?.drawRect(mShip5, mGreenPaint)
         canvas?.drawRect(mShip4, mGreenPaint)
         canvas?.drawRect(mShip3, mGreenPaint)
+        canvas?.drawRect(m2ndShip3, mGreenPaint)
         canvas?.drawRect(mShip2, mGreenPaint)
+
+        canvas?.drawText("${m3shipsLeft}x", textPos[0], textPos[1], mTextPaint)
     }
 }
