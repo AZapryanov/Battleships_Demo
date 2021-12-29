@@ -29,12 +29,11 @@ class PlaceShipsActivity : AppCompatActivity() {
         mBoard = findViewById(R.id.editable_board)
         Log.d(TAG, "onCreate: Player: $mPlayerNum")
 
-        val myShipsAsString = mBoard.getBoardStateAsString()
-
         findViewById<Button>(R.id.btn_ready).setOnClickListener {
             if (hasClickedReady){
                 return@setOnClickListener
             }
+            val myShipsAsString = mBoard.getBoardStateAsString()
 
             BluetoothService.write(mBoard.getBoardStateAsString()!!.toByteArray())
 
