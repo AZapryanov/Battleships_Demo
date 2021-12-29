@@ -54,6 +54,9 @@ class PlaceShipsActivity : AppCompatActivity() {
                 2 -> BluetoothService.write(WRITE_PLAYER2_READY.toByteArray())
             }
 
+            // Send your board to the other player
+            BluetoothService.write(mBoard.getBoardStateAsString()!!.toByteArray())
+
             CoroutineScope(Dispatchers.IO).launch {
                 startGameActivity()
             }
@@ -79,7 +82,5 @@ class PlaceShipsActivity : AppCompatActivity() {
         while(!(mP1Ready && mP2Ready)){
             continue
         }
-        // Send your board to the other player
-        BluetoothService.write(mBoard.getBoardStateAsString()!!.toByteArray())
     }
 }
