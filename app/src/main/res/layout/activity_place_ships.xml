@@ -10,7 +10,6 @@
         android:id="@+id/editable_board"
         android:layout_width="@dimen/editable_board_width"
         android:layout_height="@dimen/editable_board_height"
-        android:layout_marginTop="88dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -24,6 +23,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editable_board" />
+        app:layout_constraintTop_toTopOf="@+id/editable_board" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

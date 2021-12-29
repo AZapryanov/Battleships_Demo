@@ -25,9 +25,9 @@ class GameActivity : AppCompatActivity() {
     private val mIsMyTurn: MutableLiveData<Boolean> by lazy {
         MutableLiveData<Boolean>()
     }
-
-    private val mOpponentAttackCoordinates: MutableLiveData<Array<Int>> by lazy {
-        MutableLiveData<Array<Int>>()
+    
+    private val mShouldWaitForOpponentAttack: MutableLiveData<Boolean> by lazy {
+        MutableLiveData<Boolean>()
     }
 
     private var mIsPlayerOne = true
@@ -36,26 +36,36 @@ class GameActivity : AppCompatActivity() {
     private lateinit var mEnemyShipsPositions: Array<Array<Int>>
     private lateinit var mMyAttacksPositionsFromPreviousRound: Array<Array<Int>>
     private lateinit var mMyShipsPositionsFromPreviousRound: Array<Array<Int>>
+    private lateinit var mOpponentAttackCoordinates: Array<Int>
+
+    var receivedAttackThroughBt = ""
+    private val receivedAttackAsArray = Array(2) { 0 }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
 
         // TEMP
-        BluetoothService.mReceivedMessage = ""
+        BluetoothService.clearMReceivedMessage()
 
         //The following block is executed only one time at the start of the game
         //------------------------------------
         val myShipsPositionsFromIntent = intent.getStringExtra(PlaceShipsActivity.EXTRA_MY_SHIPS)
+        cvMyShips.setBoardState(transformStringToIntMatrix(myShipsPositionsFromIntent))
+
         mEnemyShipsPositions = transformStringToIntMatrix(intent.getStringExtra(PlaceShipsActivity.EXTRA_ENEMY_SHIPS))
+
         mMyShipsPositionsFromPreviousRound = transformStringToIntMatrix(myShipsPositionsFromIntent)
         mMyAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
 
         mIsPlayerOne = intent.getBooleanExtra(PlaceShipsActivity.EXTRA_IS_PLAYER_ONE, false)
-        cvMyShips.setBoardState(mMyShipsPositionsFromPreviousRound)
+        mOpponentAttackCoordinates = Array(2) {0}
+        buttonEndTurn.visibility = View.GONE
 
         if (mIsPlayerOne) {
             mIsMyTurn.value = true
+        } else {
+            mShouldWaitForOpponentAttack.value = mShouldWaitForOpponentAttack.value != true
         }
         //------------------------------------
 
@@ -68,9 +78,9 @@ class GameActivity : AppCompatActivity() {
             //My ships are updated based on the received attack coordinated from the opponent
             if (mIsNotFirstTurn) {
                 val opponentAttackCoordinates = mOpponentAttackCoordinates
-                val updatedBoardState =
-                    updateState(opponentAttackCoordinates.value, mMyShipsPositionsFromPreviousRound)
+                val updatedBoardState = updateState(opponentAttackCoordinates, mMyShipsPositionsFromPreviousRound)
                 cvMyShips.setBoardState(updatedBoardState)
+                mMyShipsPositionsFromPreviousRound = cvMyShips.getBoardState()
 
                 mIsEndgame = checkIfGameHasEnded(cvMyShips.getBoardState())
                 if (mIsEndgame) {
@@ -79,6 +89,7 @@ class GameActivity : AppCompatActivity() {
                     Toast.makeText(this, "GG, You have lost!", Toast.LENGTH_LONG).show()
                 }
             }
+
             if (!mIsEndgame) {
                 buttonEndTurn.visibility = View.VISIBLE
             }
@@ -87,6 +98,7 @@ class GameActivity : AppCompatActivity() {
 
         buttonEndTurn.setOnClickListener {
             cvMyAttacks.resetBoardTouchCounter()
+            cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
             buttonEndTurn.visibility = View.GONE
 
             val myAttackCoordinates = cvMyAttacks.getLastTouchInput()
@@ -113,39 +125,39 @@ class GameActivity : AppCompatActivity() {
                 attackCoordinatesToSendThroughBt += myAttackCoordinates[1].toString()
                 BluetoothService.write(attackCoordinatesToSendThroughBt.toByteArray())
 
-                var receivedAttackThroughBt = ""
-                val receivedAttackAsArray = Array(2) { 0 }
-
-                lifecycleScope.launch(Dispatchers.Default) {
-                    //Waiting to receive opponent attack coordinates and to start my next turn
-                    while (true) {
-                        receivedAttackThroughBt = BluetoothService.mReceivedMessage
-
-                        if (receivedAttackThroughBt.length > 1) {
-                            receivedAttackAsArray[0] = receivedAttackThroughBt[0].digitToInt()
-                            receivedAttackAsArray[1] = receivedAttackThroughBt[1].digitToInt()
-                            break
-                        }
-                    }
-                    launch (Dispatchers.Main){
-                        BluetoothService.clearMReceivedMessage()
-                        mOpponentAttackCoordinates.value = receivedAttackAsArray
-                    }
-                }
+                mShouldWaitForOpponentAttack.value = mShouldWaitForOpponentAttack.value != true
             }
         }
 
-        //When attack coordinates are received from other player through BT by switching the value of mIsMyTurn, my next turn is started
-        mOpponentAttackCoordinates.observe(this, {
-            mIsMyTurn.value = !mIsMyTurn.equals(true)
+        mShouldWaitForOpponentAttack.observe(this, {
+            lifecycleScope.launch(Dispatchers.Default) {
+                BluetoothService.clearMReceivedMessage()
+                //Waiting to receive opponent attack coordinates and to start my next turn
+                while (true) {
+                    receivedAttackThroughBt = BluetoothService.mReceivedMessage
+
+                    if (receivedAttackThroughBt.length > 1) {
+                        receivedAttackAsArray[0] = receivedAttackThroughBt[0].digitToInt()
+                        receivedAttackAsArray[1] = receivedAttackThroughBt[1].digitToInt()
+                        break
+                    }
+                }
+
+                launch (Dispatchers.Main){
+                    mIsMyTurn.value = !mIsMyTurn.equals(true)
+                    mOpponentAttackCoordinates = receivedAttackAsArray
+                }
+            }
         })
+
+        //When attack coordinates are received from other player through BT by switching the value of mIsMyTurn, my next turn is started
     }
 
     private fun updateState(
-        attackCoordinates: Array<Int>?,
+        attackCoordinates: Array<Int>,
         updatedBoardState: Array<Array<Int>>
     ): Array<Array<Int>> {
-        val currentAttackX = attackCoordinates!![0]
+        val currentAttackX = attackCoordinates[0]
         val currentAttackY = attackCoordinates[1]
 
         if (mEnemyShipsPositions[currentAttackX][currentAttackY] == Board.EMPTY_BOX) {
