@@ -117,6 +117,18 @@ class ConnectActivity : AppCompatActivity() {
                 val writeBuf = msg.obj as ByteArray
                 // construct a string from the buffer
                 val writeMessage = String(writeBuf)
+
+                when(writeMessage){
+                    PlaceShipsActivity.WRITE_PLAYER1_READY -> {
+                        PlaceShipsActivity.mP1Ready = true
+                        return@Handler true
+                    }
+                    PlaceShipsActivity.WRITE_PLAYER2_READY -> {
+                        PlaceShipsActivity.mP1Ready = true
+                        return@Handler true
+                    }
+                }
+
                 BluetoothService.mMyBoard = writeMessage
                 true
             }
@@ -124,9 +136,21 @@ class ConnectActivity : AppCompatActivity() {
                 val readBuf = msg.obj as ByteArray
                 // construct a string from the valid bytes in the buffer
                 val readMessage = String(readBuf, 0, msg.arg1)
+
+                Log.d(TAG, "reading message: $readMessage")
+                when(readMessage){
+                    PlaceShipsActivity.WRITE_PLAYER1_READY -> {
+                        PlaceShipsActivity.mP1Ready = true
+                        return@Handler true
+                    }
+                    PlaceShipsActivity.WRITE_PLAYER2_READY -> {
+                        PlaceShipsActivity.mP2Ready = true
+                        return@Handler true
+                    }
+                }
+
                 // This gets single coordinates from an attack
                 BluetoothService.mReceivedMessage = readMessage
-                Log.d(TAG, "reading message: $readMessage")
                 // This is used once for transferring initial boards
                 BluetoothService.mEnemyBoard = readMessage
                 true
