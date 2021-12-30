@@ -47,7 +47,7 @@ object BluetoothService {
     var mMyBoard: String? = null
     var mEnemyBoard: String? = null
 
-    fun clearMReceivedMessage() {
+    fun clearReceivedMessage() {
         mReceivedMessage = ""
     }
 

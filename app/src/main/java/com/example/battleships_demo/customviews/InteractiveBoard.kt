@@ -3,7 +3,6 @@ package com.example.battleships_demo.customviews
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
-import com.example.battleships_demo.common.GameActivityConstants
 
 class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, attrs) {
     companion object{
@@ -16,6 +15,7 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
     private var mTouchCounter: Int = 0
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
+        //Checks what is the current phase so that the right action is performed on touch
         if (mCurrentPhase == "doAttack") {
             mWhatToDoOnTouch = "drawCross"
 
@@ -23,6 +23,8 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
             mWhatToDoOnTouch = "drawShipPart"
         }
 
+        //Checks if the touch input should be allowed
+        // depending on the phase of the game and how many inputs have already been given
         if (mTouchCounter >= 1 && mCurrentPhase == "doAttack") {
             return false
 
@@ -37,7 +39,7 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
 
             when (event?.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    // Converts the tapped position to board coords
+                    // Converts the tapped position to board coordinates
                     val cellX = (event.x / mCellWidth).toInt()
                     val cellY = (event.y / mCellHeight).toInt()
 
@@ -45,17 +47,24 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
                     mLastRecordedTouchInput[1] = cellY
 
                     //Check whether to fill the box (set a ship) or put a cross (attack)
-                    when (mWhatToDoOnTouch) {
-                        Board.DRAW_CROSS -> {
-                            mBoardState[cellX][cellY] = 2
+                    if(mBoardState[cellX][cellY] == 2 || mBoardState[cellX][cellY] == 3) {
+                        return false
+                    } else {
+                        //Check whether to fill the box with red and cross(set a ship part that is hit)
+                        // or put a cross (attack)
+                        when (mWhatToDoOnTouch) {
+                            DRAW_CROSS -> {
+                                mBoardState[cellX][cellY] = 2
+                            }
+                            DRAW_RED_SHIP_PART_WITH_CROSS -> {
+                                mBoardState[cellX][cellY] = 3
+                            }
                         }
-                        Board.DRAW_RED_SHIP_PART_WITH_CROSS -> {
-                            mBoardState[cellX][cellY] = 3
-                        }
+
+                        invalidate()
+                        mTouchCounter++
+                        return true
                     }
-                    invalidate()
-                    mTouchCounter++
-                    return true
                 }
             }
             return value

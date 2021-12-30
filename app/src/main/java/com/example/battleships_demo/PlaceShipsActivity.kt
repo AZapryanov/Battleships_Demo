@@ -18,7 +18,7 @@ class PlaceShipsActivity : AppCompatActivity() {
         private const val TAG = "PlaceShipsActivity"
         // Intent extras
         const val EXTRA_MY_SHIPS = "myShips"
-        const val EXTRA_ENEMY_SHIPS = "enemyShips"
+        const val EXTRA_OPPONENT_SHIPS = "enemyShips"
         const val EXTRA_IS_PLAYER_ONE = "isPlayerOneOrTwo"
 
         var otherPlayerReady = false
@@ -59,7 +59,7 @@ class PlaceShipsActivity : AppCompatActivity() {
 
         val intent = Intent(this, GameActivity::class.java)
         intent.putExtra(EXTRA_MY_SHIPS, mMyShipsAsString)
-        intent.putExtra(EXTRA_ENEMY_SHIPS, BluetoothService.mEnemyBoard)
+        intent.putExtra(EXTRA_OPPONENT_SHIPS, BluetoothService.mEnemyBoard)
         when(mPlayerNum){
             1 -> intent.putExtra(EXTRA_IS_PLAYER_ONE, true)
             2 -> intent.putExtra(EXTRA_IS_PLAYER_ONE, false)
