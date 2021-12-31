@@ -18,6 +18,7 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
     private val mShip4 = RectF()
     private val mShip3 = RectF()
     private val mShip2 = RectF()
+    private val mShip1 = RectF()
     private var mTmpRect = RectF()
 
     private var mShipTouched = 0
@@ -45,7 +46,10 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
         mShip3.set(x, y, x+(mCellWidth*3), y+mCellHeight)
 
         x = mShip3.right + mMarginLeft
-        mShip2.set(x, y, x+(mCellWidth*2), y+mCellHeight)
+        mShip2.set(x, y, x+(mCellWidth*3), y+mCellHeight)
+
+        x = mShip2.right + mMarginLeft
+        mShip1.set(x, y, x+(mCellWidth*2), y+mCellHeight)
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
@@ -75,8 +79,11 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                     Log.d(TAG, "onTouchEvent: ship2 touched")
                     mShipTouched = 2
                     value = true
-                }
-                else {
+                } else if (mShip1.contains(x, y)) {
+                    Log.d(TAG, "onTouchEvent: ship1 touched")
+                    mShipTouched = 1
+                    value = true
+                } else {
                     value = false
                 }
             }
@@ -116,6 +123,13 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                         mShip2.set(mTmpRect)
                         value = true
                     }
+                    1 -> {
+                        mTmpRect.right = mTmpRect.left + mShip1.width()
+                        mTmpRect.bottom = mTmpRect.top + mShip1.height()
+
+                        mShip1.set(mTmpRect)
+                        value = true
+                    }
                     else -> {
                         value = false
                     }
@@ -125,8 +139,14 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                 val xInBoardSpace = (x!! / mCellWidth).toInt()
                 val yInBoardSpace = (y!! / mCellHeight).toInt()
 
-                for(i in 0 until mShipTouched){
-                    mBoardState[xInBoardSpace + i][yInBoardSpace] = 1
+                if (mShipTouched == 2 || mShipTouched == 1) {
+                    for(i in 0 until mShipTouched + 1){
+                        mBoardState[xInBoardSpace + i][yInBoardSpace] = 1
+                    }
+                } else {
+                    for(i in 0 until mShipTouched){
+                        mBoardState[xInBoardSpace + i][yInBoardSpace] = 1
+                    }
                 }
 
                 when(mShipTouched){
@@ -134,6 +154,7 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                     4 -> {mShip4.setEmpty()}
                     3 -> {mShip3.setEmpty()}
                     2 -> {mShip2.setEmpty()}
+                    1 -> {mShip1.setEmpty()}
                 }
 
                 value = true
@@ -152,5 +173,6 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
         canvas?.drawRect(mShip4, mGreenPaint)
         canvas?.drawRect(mShip3, mGreenPaint)
         canvas?.drawRect(mShip2, mGreenPaint)
+        canvas?.drawRect(mShip1, mGreenPaint)
     }
 }

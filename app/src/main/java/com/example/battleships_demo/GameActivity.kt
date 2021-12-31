@@ -19,7 +19,7 @@ class GameActivity : AppCompatActivity() {
         private const val TAG = "GameActivity"
         private const val PHASE_MARK_ATTACK = "doAttack"
         private const val PHASE_TOUCH_INPUTS_LOCKED = "lock"
-        private const val NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME = 19
+        private const val NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME = 17
         private const val WINNER_MESSAGE = "GG, You have won!"
         private const val DEFEATED_MESSAGE = "GG, You have lost."
     }
@@ -114,6 +114,9 @@ class GameActivity : AppCompatActivity() {
 
             //Gets the last touch input on the interactive game board
             val myAttackCoordinates = cvMyAttacks.getLastTouchInput()
+            var coordinatesToSend = ""
+            coordinatesToSend += myAttackCoordinates[0].toString()
+            coordinatesToSend += myAttackCoordinates[1].toString()
 
             //My attack board is updated based on my attack coordinates and whether it is a hit or miss
             val updatedMyAttacksPositions =
@@ -134,15 +137,14 @@ class GameActivity : AppCompatActivity() {
                 // his board can update to the final state and also register Endgame
                 buttonEndTurn.visibility = View.GONE
                 cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+                //Send my attack coordinates to the other player through BT
+                //so that his game ends too and he gets a message that he is defeated
+                BluetoothService.write(coordinatesToSend.toByteArray())
                 Toast.makeText(this, WINNER_MESSAGE, Toast.LENGTH_LONG).show()
             }
 
             if (!mIsEndgame) {
-                var coordinatesToSend = ""
-                coordinatesToSend += myAttackCoordinates[0].toString()
-                coordinatesToSend += myAttackCoordinates[1].toString()
-
-                //Sending my attack coordinates to the other player through BT
+                //Send my attack coordinates to the other player through BT
                 BluetoothService.write(coordinatesToSend.toByteArray())
                 Log.d(TAG, "Attack sent to opponent.")
 
