@@ -96,6 +96,7 @@ class GameActivity : AppCompatActivity() {
                     Log.d(TAG, "Game has ended.")
                     cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
                     buttonEndTurn.visibility = View.GONE
+                    cvMyAttacks.visualizeRemainingOpponentShips(mOpponentShipsPositions)
                     Toast.makeText(this, DEFEATED_MESSAGE, Toast.LENGTH_LONG).show()
                 }
             }
@@ -142,6 +143,8 @@ class GameActivity : AppCompatActivity() {
                 //Send my attack coordinates to the other player through BT
                 //so that his game ends too and he gets a message that he is defeated
                 BluetoothService.write(coordinatesToSend.toByteArray())
+
+                cvMyAttacks.visualizeRemainingOpponentShips(mOpponentShipsPositions)
                 Toast.makeText(this, WINNER_MESSAGE, Toast.LENGTH_LONG).show()
             }
 

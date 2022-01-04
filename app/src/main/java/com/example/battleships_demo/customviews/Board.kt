@@ -87,6 +87,7 @@ open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
                     }
                     mBoardState[i][j] == 1 -> {
                         canvas?.drawRect(mCellRect, mGreenPaint)
+                        canvas?.drawRect(mCellRect, mDefRectPaint)
                     }
                     mBoardState[i][j] == 2 -> {
                         canvas?.drawRect(mCellRect,mDefRectPaint)

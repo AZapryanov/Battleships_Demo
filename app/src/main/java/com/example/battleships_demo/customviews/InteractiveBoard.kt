@@ -86,4 +86,15 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
     fun resetBoardTouchCounter() {
         mTouchCounter = 0
     }
+
+    fun visualizeRemainingOpponentShips(opponentShips: Array<Array<Int>>) {
+        for (i in 0 until mBoardSize) {
+            for (j in 0 until mBoardSize) {
+                if (opponentShips[i][j] == 1 && mBoardState[i][j] == 0) {
+                    mBoardState[i][j] = 1
+                }
+            }
+        }
+        invalidate()
+    }
 }
