@@ -109,10 +109,6 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                     Log.d(TAG, "onTouchEvent: ship2 touched")
                     mShipTouched = 2
                     value = true
-                } else if (mShip1.contains(x, y)) {
-                    Log.d(TAG, "onTouchEvent: ship1 touched")
-                    mShipTouched = 1
-                    value = true
                 } else {
                     value = false
                 }
@@ -168,13 +164,6 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
 
                         mShip2.rect.set(mTmpRect)
                         mShip2.invalidPos = !mBoardRect.contains(mShip2.rect)
-                        value = true
-                    }
-                    1 -> {
-                        mTmpRect.right = mTmpRect.left + mShip1.width()
-                        mTmpRect.bottom = mTmpRect.top + mShip1.height()
-
-                        mShip1.set(mTmpRect)
                         value = true
                     }
                     else -> {
