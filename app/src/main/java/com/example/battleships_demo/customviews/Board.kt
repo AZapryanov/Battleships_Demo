@@ -20,7 +20,7 @@ open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
     protected val mGreenPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     // Used to fill boxes with already attacked ship parts in them
-    private val mRedPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    protected val mRedPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     protected var mCellRect: RectF
 
