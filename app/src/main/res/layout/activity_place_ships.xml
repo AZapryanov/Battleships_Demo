@@ -4,6 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background_1"
+    android:backgroundTint="#90FFFFFF"
+    android:backgroundTintMode="src_over"
     tools:context=".PlaceShipsActivity">
 
     <com.example.battleships_demo.customviews.EditableBoard
@@ -24,7 +27,7 @@
         android:layout_height="wrap_content"
         android:text="Ready"
         android:textAllCaps="false"
-        android:textSize="15sp"
+        android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/horizontalGuideline3"
         app:layout_constraintEnd_toStartOf="@+id/verticalGuideline2"
         app:layout_constraintStart_toStartOf="@+id/verticalGuideline1"

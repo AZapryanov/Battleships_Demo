@@ -4,6 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background_1"
+    android:backgroundTint="#90FFFFFF"
+    android:backgroundTintMode="src_over"
     tools:context=".GameActivity">
 
     <com.example.battleships_demo.customviews.InteractiveBoard
@@ -24,7 +27,7 @@
         android:backgroundTint="@android:color/holo_blue_light"
         android:text="End turn"
         android:textAllCaps="false"
-        android:textSize="15sp"
+        android:textSize="20sp"
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintEnd_toEndOf="@+id/cvMyAttacks"
@@ -99,6 +102,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="A"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -107,6 +111,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="B"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -115,6 +120,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="C"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -123,6 +129,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="D"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -131,6 +138,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="E"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -139,6 +147,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="F"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -147,6 +156,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="G"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -155,6 +165,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="H"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -163,6 +174,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="I"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -171,6 +183,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="J"
+            android:textStyle="bold"
             android:textAlignment="center" />
     </LinearLayout>
 
@@ -189,6 +202,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="A"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -197,6 +211,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="B"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -205,6 +220,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="C"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -213,6 +229,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="D"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -221,6 +238,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="E"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -229,6 +247,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="F"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -237,6 +256,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="G"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -245,6 +265,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="H"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -253,6 +274,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="I"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -261,6 +283,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="J"
+            android:textStyle="bold"
             android:textAlignment="center" />
     </LinearLayout>
 
@@ -280,6 +303,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="1"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -288,6 +312,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="2"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -296,6 +321,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="3"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -304,6 +330,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="4"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -312,6 +339,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="5"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -320,6 +348,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="6"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -328,6 +357,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="7"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -336,6 +366,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="8"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -344,6 +375,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="9"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -352,6 +384,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="10"
+            android:textStyle="bold"
             android:textAlignment="center" />
     </LinearLayout>
 
@@ -371,6 +404,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="1"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -379,6 +413,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="2"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -387,6 +422,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="3"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -395,6 +431,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="4"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -403,6 +440,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="5"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -411,6 +449,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="6"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -419,6 +458,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="7"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -427,6 +467,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="8"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -435,6 +476,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="9"
+            android:textStyle="bold"
             android:textAlignment="center" />
 
         <TextView
@@ -443,6 +485,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:text="10"
+            android:textStyle="bold"
             android:textAlignment="center" />
     </LinearLayout>
 
