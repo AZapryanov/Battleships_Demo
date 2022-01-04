@@ -133,10 +133,12 @@ class GameActivity : AppCompatActivity() {
 
             if (mIsEndgame) {
                 Log.d(TAG, "Game has ended.")
+
                 //Send my attack coordinates to opponent so that
                 // his board can update to the final state and also register Endgame
                 buttonEndTurn.visibility = View.GONE
                 cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+
                 //Send my attack coordinates to the other player through BT
                 //so that his game ends too and he gets a message that he is defeated
                 BluetoothService.write(coordinatesToSend.toByteArray())
@@ -158,6 +160,7 @@ class GameActivity : AppCompatActivity() {
             lifecycleScope.launch(Dispatchers.Default) {
                 BluetoothService.clearReceivedMessage()
                 Log.d(TAG, "Waiting for opponent attack.")
+
                 //Waiting to receive opponent attack coordinates and to start my next turn
                 while (true) {
                     mReceivedAttackThroughBt = BluetoothService.mReceivedMessage
@@ -172,6 +175,7 @@ class GameActivity : AppCompatActivity() {
 
                 launch(Dispatchers.Main) {
                     mOpponentAttackCoordinates = mReceivedAttack
+
                     //When attack coordinates are received from the other player through BT,
                     //by switching the value of mIsMyTurn (it is observed), my next turn is started
                     mIsMyTurn.value = !mIsMyTurn.equals(true)

@@ -5,33 +5,20 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 
 class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, attrs) {
-    companion object{
+    companion object {
         private const val TAG = "InteractiveBoard"
     }
 
     private var mWhatToDoOnTouch: String = ""
     private var mCurrentPhase: String = ""
-    private var mLastRecordedTouchInput = Array(2) {0}
+    private var mLastRecordedTouchInput = Array(2) { 0 }
     private var mTouchCounter: Int = 0
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        //Checks what is the current phase so that the right action is performed on touch
-        if (mCurrentPhase == "doAttack") {
-            mWhatToDoOnTouch = "drawCross"
+        mWhatToDoOnTouch = "drawCross"
 
-        } else if (mCurrentPhase == "placeShips") {
-            mWhatToDoOnTouch = "drawShipPart"
-        }
-
-        //Checks if the touch input should be allowed
-        // depending on the phase of the game and how many inputs have already been given
-        if (mTouchCounter >= 1 && mCurrentPhase == "doAttack") {
-            return false
-
-        } else if (mTouchCounter >= 17 && mCurrentPhase == "placeShips") {
-            return false
-
-        } else if (mCurrentPhase == "receiveAttack" || mCurrentPhase == "lock") {
+        //Checks if the touch input should be allowed depending on the phase of the game
+        if (mCurrentPhase == "lock") {
             return false
 
         } else {
@@ -39,17 +26,23 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
 
             when (event?.action) {
                 MotionEvent.ACTION_DOWN -> {
+
                     // Converts the tapped position to board coordinates
                     val cellX = (event.x / mCellWidth).toInt()
                     val cellY = (event.y / mCellHeight).toInt()
 
-                    mLastRecordedTouchInput[0] = cellX
-                    mLastRecordedTouchInput[1] = cellY
-
                     //Check whether to fill the box (set a ship) or put a cross (attack)
-                    if(mBoardState[cellX][cellY] == 2 || mBoardState[cellX][cellY] == 3) {
+                    if (mBoardState[cellX][cellY] == 2 || mBoardState[cellX][cellY] == 3) {
                         return false
+
                     } else {
+                        //During my attack turn if I want to change my attack location, when I click again,
+                        // the previously clicked box will become blank again when the view redraws itself,
+                        // because here its value gets set to 0
+                        if (mTouchCounter >= 1 && mCurrentPhase == "doAttack") {
+                            mBoardState[mLastRecordedTouchInput[0]][mLastRecordedTouchInput[1]] = 0
+                        }
+
                         //Check whether to fill the box with red and cross(set a ship part that is hit)
                         // or put a cross (attack)
                         when (mWhatToDoOnTouch) {
@@ -63,6 +56,8 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
 
                         invalidate()
                         mTouchCounter++
+                        mLastRecordedTouchInput[0] = cellX
+                        mLastRecordedTouchInput[1] = cellY
                         return true
                     }
                 }
@@ -85,7 +80,7 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
     }
 
     fun getLastTouchInput(): Array<Int> {
-        return  mLastRecordedTouchInput
+        return mLastRecordedTouchInput
     }
 
     fun resetBoardTouchCounter() {

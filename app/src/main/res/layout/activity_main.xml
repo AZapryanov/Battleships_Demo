@@ -11,6 +11,7 @@
         android:id="@+id/btn_start_connect_activity"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/green_sea"
         android:text="Connect to device"
         android:textAllCaps="false"
         android:textSize="22sp"
