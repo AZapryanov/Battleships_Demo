@@ -41,6 +41,10 @@ class PlaceShipsActivity : AppCompatActivity() {
             if (mHasClickedReady){
                 return@setOnClickListener
             }
+            
+            mBoard.finishEditing()
+            Log.d(TAG, "onCreate: ${mBoard.getBoardState()}")
+            
             mHasClickedReady = true
             mMyShipsAsString = mBoard.getBoardStateAsString()!!
 
