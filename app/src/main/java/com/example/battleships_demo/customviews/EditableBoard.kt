@@ -275,13 +275,6 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
 //                for(i in 0 until mShipTouched){
 //                    mBoardState[xInBoardSpace + i][yInBoardSpace] = 1
 //                }
-//
-//                when(mShipTouched){
-//                    5 -> {mShip5.rect.setEmpty()}
-//                    4 -> {mShip4.rect.setEmpty()}
-//                    3 -> {mShip3.rect.setEmpty(); m3shipsLeft--}
-//                    2 -> {mShip2.rect.setEmpty()}
-//                }
 
                 value = true
             }
@@ -323,5 +316,20 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
         }
 
         canvas?.drawText("${m3shipsLeft}x", mTextPos.x, mTextPos.y, mTextPaint)
+    }
+
+    fun finishEditing(){
+        // Set the board state according to where the ships are placed
+        // I'll clean this up later!
+        for(i in 0 until mShip5.size)
+            mBoardState[(mShip5.rect.left / mCellWidth).toInt() + i][(mShip5.rect.top / mCellHeight).toInt()] = 1
+        for(i in 0 until mShip4.size)
+            mBoardState[(mShip4.rect.left / mCellWidth).toInt() + i][(mShip4.rect.top / mCellHeight).toInt()] = 1
+        for(i in 0 until mShip3.size)
+            mBoardState[(mShip3.rect.left / mCellWidth).toInt() + i][(mShip3.rect.top / mCellHeight).toInt()] = 1
+        for(i in 0 until m2ndShip3.size)
+            mBoardState[(m2ndShip3.rect.left / mCellWidth).toInt() + i][(m2ndShip3.rect.top / mCellHeight).toInt()] = 1
+        for(i in 0 until mShip2.size)
+            mBoardState[(mShip2.rect.left / mCellWidth).toInt() + i][(mShip2.rect.top / mCellHeight).toInt()] = 1
     }
 }
