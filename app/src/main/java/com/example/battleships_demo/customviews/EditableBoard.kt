@@ -153,6 +153,8 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                 val xInBoardSpace = (x!! / mCellWidth).toInt()
                 val yInBoardSpace = (y!! / mCellHeight).toInt()
 
+                // 3_2 number is actually 32 and that messes up the for loop
+                // so I just change it to 3
                 if(mShipTouched == 3_2) {
                     mShipTouched = 3
                     m2ndShip3.setEmpty()
