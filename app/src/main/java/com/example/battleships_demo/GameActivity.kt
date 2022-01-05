@@ -19,10 +19,12 @@ class GameActivity : AppCompatActivity() {
         private const val TAG = "GameActivity"
         private const val PHASE_MARK_ATTACK = "doAttack"
         private const val PHASE_TOUCH_INPUTS_LOCKED = "lock"
-        private const val NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME = 17
         private const val SECOND_ATTACK_AFTER_HIT = "It's a hit! Do another attack."
         private const val WINNER_MESSAGE = "GG, You have won!"
         private const val DEFEATED_MESSAGE = "GG, You have lost."
+        private const val NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME = 17
+        private const val INITIAL_ARRAY_VALUE = 15
+        private const val INITIAL_ARRAY_SIZE = 50
     }
 
     private val mIsMyTurn: MutableLiveData<Boolean> by lazy {
@@ -45,7 +47,7 @@ class GameActivity : AppCompatActivity() {
     private lateinit var mMyShipsPositionsFromPreviousRound: Array<Array<Int>>
 
     private var mReceivedAttackThroughBt = ""
-    private val mReceivedAttack = Array(2) { 0 }
+    private var mCoordinatesToSend = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +64,7 @@ class GameActivity : AppCompatActivity() {
 
         mOpponentShipsPositions =
             transformStringToIntMatrix(intent.getStringExtra(PlaceShipsActivity.EXTRA_OPPONENT_SHIPS))
-        mOpponentAttackCoordinates = Array(2) { 0 }
+        mOpponentAttackCoordinates = Array(INITIAL_ARRAY_SIZE) { INITIAL_ARRAY_VALUE }
 
         mIsPlayerOne = intent.getBooleanExtra(PlaceShipsActivity.EXTRA_IS_PLAYER_ONE, false)
         Log.d(TAG, "I am player one = $mIsPlayerOne.")
@@ -86,7 +88,7 @@ class GameActivity : AppCompatActivity() {
             cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
             cvMyAttacks.setPhase(PHASE_MARK_ATTACK)
 
-            if(!mIsAttackAfterHit) {
+            if (!mIsAttackAfterHit) {
                 //My ships are updated based on the received attack coordinated from the opponent
                 if (mIsNotFirstTurn) {
                     val opponentAttackCoordinates = mOpponentAttackCoordinates
@@ -122,16 +124,14 @@ class GameActivity : AppCompatActivity() {
 
                 //Gets the last touch input on the interactive game board
                 val myAttackCoordinates = cvMyAttacks.getLastTouchInput()
-                var coordinatesToSend = ""
-                coordinatesToSend += myAttackCoordinates[0].toString()
-                coordinatesToSend += myAttackCoordinates[1].toString()
+                mCoordinatesToSend += myAttackCoordinates[0].toString()
+                mCoordinatesToSend += myAttackCoordinates[1].toString()
 
                 //My attack board is updated based on my attack coordinates and whether it is a hit or miss
                 val updatedMyAttacksPositions =
                     updateMyAttacks(
                         myAttackCoordinates,
-                        mMyAttacksPositionsFromPreviousRound,
-                        mOpponentShipsPositions
+                        mMyAttacksPositionsFromPreviousRound
                     )
 
                 cvMyAttacks.setBoardState(updatedMyAttacksPositions)
@@ -145,7 +145,7 @@ class GameActivity : AppCompatActivity() {
 
                     //Send my attack coordinates to the other player through BT
                     //so that his game ends too and he gets a message that he is defeated
-                    BluetoothService.write(coordinatesToSend.toByteArray())
+                    BluetoothService.write(mCoordinatesToSend.toByteArray())
                 }
 
                 if (!mIsEndgame) {
@@ -160,7 +160,8 @@ class GameActivity : AppCompatActivity() {
 
                     } else {
                         //Send my attack coordinates to the other player through BT
-                        BluetoothService.write(coordinatesToSend.toByteArray())
+                        BluetoothService.write(mCoordinatesToSend.toByteArray())
+                        mCoordinatesToSend = ""
                         Log.d(TAG, "Attack sent to opponent.")
 
                         //This object is observed => Switching its value starts a coroutine
@@ -182,16 +183,16 @@ class GameActivity : AppCompatActivity() {
                     mReceivedAttackThroughBt = BluetoothService.mReceivedMessage
 
                     if (mReceivedAttackThroughBt.length > 1) {
-                        mReceivedAttack[0] = mReceivedAttackThroughBt[0].digitToInt()
-                        mReceivedAttack[1] = mReceivedAttackThroughBt[1].digitToInt()
+                        for (i in mReceivedAttackThroughBt.indices) {
+                            mOpponentAttackCoordinates[i] = mReceivedAttackThroughBt[i].digitToInt()
+                        }
+
                         Log.d(TAG, "Opponent attack received.")
                         break
                     }
                 }
 
                 launch(Dispatchers.Main) {
-                    mOpponentAttackCoordinates = mReceivedAttack
-
                     //When attack coordinates are received from the other player through BT,
                     //by switching the value of mIsMyTurn (it is observed), my next turn is started
                     mIsMyTurn.value = !mIsMyTurn.equals(true)
@@ -203,15 +204,14 @@ class GameActivity : AppCompatActivity() {
     private fun updateMyAttacks(
         myAttackCoordinates: Array<Int>,
         myAttacksPositions: Array<Array<Int>>,
-        opponentShipsPositions: Array<Array<Int>>
     ): Array<Array<Int>> {
         val opponentAttackX = myAttackCoordinates[0]
         val opponentAttackY = myAttackCoordinates[1]
 
-        if (opponentShipsPositions[opponentAttackX][opponentAttackY] == Board.EMPTY_BOX) {
+        if (mOpponentShipsPositions[opponentAttackX][opponentAttackY] == Board.EMPTY_BOX) {
             myAttacksPositions[opponentAttackX][opponentAttackY] = Board.CROSS
 
-        } else if (opponentShipsPositions[opponentAttackX][opponentAttackY] == Board.SHIP_PART) {
+        } else if (mOpponentShipsPositions[opponentAttackX][opponentAttackY] == Board.SHIP_PART) {
             myAttacksPositions[opponentAttackX][opponentAttackY] = Board.SHIP_PART_HIT
         }
         return myAttacksPositions
@@ -221,15 +221,22 @@ class GameActivity : AppCompatActivity() {
         opponentAttackCoordinates: Array<Int>,
         myShipsPositions: Array<Array<Int>>,
     ): Array<Array<Int>> {
-        val opponentAttackX = opponentAttackCoordinates[0]
-        val opponentAttackY = opponentAttackCoordinates[1]
+        //Updates my ships board with one or more opponent attacks
+        for (i in opponentAttackCoordinates.indices step 2) {
+            if (opponentAttackCoordinates[i] == INITIAL_ARRAY_VALUE) {
+                break
+            }
+            val opponentAttackX = opponentAttackCoordinates[i]
+            val opponentAttackY = opponentAttackCoordinates[i + 1]
 
-        if (myShipsPositions[opponentAttackX][opponentAttackY] == Board.EMPTY_BOX) {
-            myShipsPositions[opponentAttackX][opponentAttackY] = Board.CROSS
+            if (myShipsPositions[opponentAttackX][opponentAttackY] == Board.EMPTY_BOX) {
+                myShipsPositions[opponentAttackX][opponentAttackY] = Board.CROSS
 
-        } else if (myShipsPositions[opponentAttackX][opponentAttackY] == Board.SHIP_PART) {
-            myShipsPositions[opponentAttackX][opponentAttackY] = Board.SHIP_PART_HIT
+            } else if (myShipsPositions[opponentAttackX][opponentAttackY] == Board.SHIP_PART) {
+                myShipsPositions[opponentAttackX][opponentAttackY] = Board.SHIP_PART_HIT
+            }
         }
+
         return myShipsPositions
     }
 
