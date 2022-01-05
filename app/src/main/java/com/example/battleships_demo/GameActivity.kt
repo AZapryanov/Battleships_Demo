@@ -114,7 +114,6 @@ class GameActivity : AppCompatActivity() {
         })
 
         buttonEndTurn.setOnClickListener {
-
             //Check is an attack has been marked before allowing the End Turn button to be pressed
             if (cvMyAttacks.getTouchCounter() >= 1) {
                 Log.d(TAG, "End turn button clicked.")
@@ -221,6 +220,7 @@ class GameActivity : AppCompatActivity() {
         opponentAttackCoordinates: Array<Int>,
         myShipsPositions: Array<Array<Int>>,
     ): Array<Array<Int>> {
+
         //Updates my ships board with one or more opponent attacks
         for (i in opponentAttackCoordinates.indices step 2) {
             if (opponentAttackCoordinates[i] == INITIAL_ARRAY_VALUE) {
