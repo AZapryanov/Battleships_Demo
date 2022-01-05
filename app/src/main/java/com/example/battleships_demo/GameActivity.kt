@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.customviews.Board
+import com.example.battleships_demo.customviews.InteractiveBoard
 import kotlinx.android.synthetic.main.activity_game.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -111,54 +112,65 @@ class GameActivity : AppCompatActivity() {
         })
 
         buttonEndTurn.setOnClickListener {
-            Log.d(TAG, "End turn button clicked.")
-            cvMyAttacks.resetBoardTouchCounter()
-            cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-            buttonEndTurn.visibility = View.GONE
-
-            //Gets the last touch input on the interactive game board
-            val myAttackCoordinates = cvMyAttacks.getLastTouchInput()
-            var coordinatesToSend = ""
-            coordinatesToSend += myAttackCoordinates[0].toString()
-            coordinatesToSend += myAttackCoordinates[1].toString()
-
-            //My attack board is updated based on my attack coordinates and whether it is a hit or miss
-            val updatedMyAttacksPositions =
-                updateMyAttacks(
-                    myAttackCoordinates,
-                    mMyAttacksPositionsFromPreviousRound,
-                    mOpponentShipsPositions
-                )
-            cvMyAttacks.setBoardState(updatedMyAttacksPositions)
-            Log.d(TAG, "My attacks updated after check for hit.")
-            mMyAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
-
-            mIsEndgame = checkIfGameHasEnded(cvMyAttacks.getBoardState())
-
-            if (mIsEndgame) {
-                Log.d(TAG, "Game has ended.")
-
-                //Send my attack coordinates to opponent so that
-                // his board can update to the final state and also register Endgame
-                buttonEndTurn.visibility = View.GONE
+            if (cvMyAttacks.getTouchCounter() >= 1) {
+                Log.d(TAG, "End turn button clicked.")
+                cvMyAttacks.resetBoardTouchCounter()
                 cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+                buttonEndTurn.visibility = View.GONE
 
-                //Send my attack coordinates to the other player through BT
-                //so that his game ends too and he gets a message that he is defeated
-                BluetoothService.write(coordinatesToSend.toByteArray())
+                //Gets the last touch input on the interactive game board
+                val myAttackCoordinates = cvMyAttacks.getLastTouchInput()
+                var coordinatesToSend = ""
+                coordinatesToSend += myAttackCoordinates[0].toString()
+                coordinatesToSend += myAttackCoordinates[1].toString()
 
-                cvMyAttacks.visualizeRemainingOpponentShips(mOpponentShipsPositions)
-                Toast.makeText(this, WINNER_MESSAGE, Toast.LENGTH_LONG).show()
-            }
+                //My attack board is updated based on my attack coordinates and whether it is a hit or miss
+                val updatedMyAttacksPositions =
+                    updateMyAttacks(
+                        myAttackCoordinates,
+                        mMyAttacksPositionsFromPreviousRound,
+                        mOpponentShipsPositions
+                    )
 
-            if (!mIsEndgame) {
-                //Send my attack coordinates to the other player through BT
-                BluetoothService.write(coordinatesToSend.toByteArray())
-                Log.d(TAG, "Attack sent to opponent.")
+                cvMyAttacks.setBoardState(updatedMyAttacksPositions)
+                Log.d(TAG, "My attacks updated after check for hit.")
+                mMyAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
 
-                //This object is observed => Switching its value starts a coroutine
-                // in which I wait to receive the opponent's attack and to start my next turn
-                mShouldWaitForOpponentAttack.value = mShouldWaitForOpponentAttack.value != true
+                mIsEndgame = checkIfGameHasEnded(cvMyAttacks.getBoardState())
+
+                if (mIsEndgame) {
+                    Log.d(TAG, "Game has ended.")
+
+                    //Send my attack coordinates to opponent so that
+                    // his board can update to the final state and also register Endgame
+                    buttonEndTurn.visibility = View.GONE
+                    cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+
+                    //Send my attack coordinates to the other player through BT
+                    //so that his game ends too and he gets a message that he is defeated
+                    BluetoothService.write(coordinatesToSend.toByteArray())
+
+                    //The remaining enemy ships are shown if I lose
+                    cvMyAttacks.visualizeRemainingOpponentShips(mOpponentShipsPositions)
+                    Toast.makeText(this, WINNER_MESSAGE, Toast.LENGTH_LONG).show()
+                }
+
+                if (!mIsEndgame) {
+                    cvMyAttacks.clearTouchCounter()
+                    //If I have hit an enemy ship on my turn I get an extra turn
+                    if (checkIfAttackIsAHit(myAttackCoordinates)) {
+                        mIsMyTurn.value = !mIsMyTurn.equals(true)
+
+                    } else {
+                        //Send my attack coordinates to the other player through BT
+                        BluetoothService.write(coordinatesToSend.toByteArray())
+                        Log.d(TAG, "Attack sent to opponent.")
+
+                        //This object is observed => Switching its value starts a coroutine
+                        // in which I wait to receive the opponent's attack and to start my next turn
+                        mShouldWaitForOpponentAttack.value = mShouldWaitForOpponentAttack.value != true
+                    }
+                }
             }
         }
 
@@ -245,5 +257,12 @@ class GameActivity : AppCompatActivity() {
             }
         }
         return outputMatrix
+    }
+
+    private fun checkIfAttackIsAHit(attackCoordinates: Array<Int>): Boolean {
+        if (mOpponentShipsPositions[attackCoordinates[0]][attackCoordinates[1]] == 1) {
+            return true
+        }
+        return false
     }
 }

@@ -97,4 +97,12 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
         }
         invalidate()
     }
+
+    fun getTouchCounter(): Int {
+        return mTouchCounter
+    }
+
+    fun clearTouchCounter() {
+        mTouchCounter = 0
+    }
 }
