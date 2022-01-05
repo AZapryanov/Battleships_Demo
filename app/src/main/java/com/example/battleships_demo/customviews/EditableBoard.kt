@@ -2,10 +2,11 @@ package com.example.battleships_demo.customviews
 
 import android.content.Context
 import android.graphics.*
-import android.graphics.Paint.ANTI_ALIAS_FLAG
 import android.util.AttributeSet
 import android.util.Log
+import android.view.GestureDetector
 import android.view.MotionEvent
+import androidx.core.view.GestureDetectorCompat
 import com.example.battleships_demo.Ship
 
 class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attrs) {
@@ -18,6 +19,23 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
     private var mTmpRect = RectF()
     private val mMarginTop = 60
     private val mMarginLeft = 30
+    private val mDetector: GestureDetectorCompat
+
+    init {
+        mDetector = GestureDetectorCompat(this.context, MyGestureListener())
+    }
+
+    private inner class MyGestureListener : GestureDetector.SimpleOnGestureListener() {
+        override fun onSingleTapUp(e: MotionEvent?): Boolean {
+            Log.d(TAG, "onSingleTapUp: called")
+            for(ship in mShips)
+                if(ship.isTouched){
+                    ship.isHorizontal = !ship.isHorizontal
+                    ship.isTouched = false
+                }
+            return super.onSingleTapUp(e)
+        }
+    }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         // Cell height is equal to cell width for cells to be square
@@ -76,6 +94,7 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                         ship.isTouched = false
                     }
                 }
+                if (value) mDetector.onTouchEvent(event)
             }
             // If ACTION_DOWN returned true then do this
             MotionEvent.ACTION_MOVE -> {

@@ -7,4 +7,5 @@ class Ship(val size: Int) {
     var initialPos = RectF()
     var hasInvalidPos = false
     var isTouched = false
+    var isHorizontal = true
 }
