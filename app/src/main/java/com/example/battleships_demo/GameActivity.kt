@@ -21,6 +21,7 @@ class GameActivity : AppCompatActivity() {
         private const val PHASE_MARK_ATTACK = "doAttack"
         private const val PHASE_TOUCH_INPUTS_LOCKED = "lock"
         private const val NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME = 17
+        private const val SECOND_ATTACK_AFTER_HIT = "It's a hit! Do another attack."
         private const val WINNER_MESSAGE = "GG, You have won!"
         private const val DEFEATED_MESSAGE = "GG, You have lost."
     }
@@ -112,6 +113,8 @@ class GameActivity : AppCompatActivity() {
         })
 
         buttonEndTurn.setOnClickListener {
+
+            //Check is an attack has been marked before allowing the End Turn button to be pressed
             if (cvMyAttacks.getTouchCounter() >= 1) {
                 Log.d(TAG, "End turn button clicked.")
                 cvMyAttacks.resetBoardTouchCounter()
@@ -157,8 +160,11 @@ class GameActivity : AppCompatActivity() {
 
                 if (!mIsEndgame) {
                     cvMyAttacks.resetBoardTouchCounter()
+
                     //If I have hit an enemy ship on my turn I get an extra turn
                     if (checkIfAttackIsAHit(myAttackCoordinates)) {
+                        Toast.makeText(this, SECOND_ATTACK_AFTER_HIT, Toast.LENGTH_SHORT).show()
+                        Log.d(TAG, "The attack is a hit. Will do another attack")
                         mIsMyTurn.value = !mIsMyTurn.equals(true)
 
                     } else {
