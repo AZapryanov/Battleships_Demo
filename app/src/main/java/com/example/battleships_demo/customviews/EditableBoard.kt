@@ -292,26 +292,31 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                 drawRect(mShip5.rect, mRedPaint)
             }
             else drawRect(mShip5.rect, mGreenPaint)
+                 drawRect(mShip5.rect, mDefRectPaint)
 
             if(mShip4.invalidPos) {
                 drawRect(mShip4.rect, mRedPaint)
             }
             else drawRect(mShip4.rect, mGreenPaint)
+                 drawRect(mShip4.rect, mDefRectPaint)
 
             if(mShip3.invalidPos) {
                 drawRect(mShip3.rect, mRedPaint)
             }
             else drawRect(mShip3.rect, mGreenPaint)
+                 drawRect(mShip3.rect, mDefRectPaint)
 
             if(m2ndShip3.invalidPos) {
                 drawRect(m2ndShip3.rect, mRedPaint)
             }
             else drawRect(m2ndShip3.rect, mGreenPaint)
+                 drawRect(m2ndShip3.rect, mDefRectPaint)
 
             if(mShip2.invalidPos) {
                 drawRect(mShip2.rect, mRedPaint)
             }
             else drawRect(mShip2.rect, mGreenPaint)
+                 drawRect(mShip2.rect, mDefRectPaint)
         }
 
         canvas?.drawText("${m3shipsLeft}x", mTextPos.x, mTextPos.y, mTextPaint)

@@ -66,6 +66,9 @@ class GameActivity : AppCompatActivity() {
         Log.d(TAG, "I am player one = $mIsPlayerOne.")
         buttonEndTurn.visibility = View.GONE
 
+        cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+        cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+
         if (mIsPlayerOne) {
             mIsMyTurn.value = true
         } else {
