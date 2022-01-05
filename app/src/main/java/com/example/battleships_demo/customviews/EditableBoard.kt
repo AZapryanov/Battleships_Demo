@@ -152,8 +152,11 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
         for(ship in mShips)
             if(ship.hasInvalidPos){
                 canvas?.drawRect(ship.rect, mRedPaint)
-            } else
+                canvas?.drawRect(ship.rect, mDefRectPaint)
+            } else {
                 canvas?.drawRect(ship.rect, mGreenPaint)
+                canvas?.drawRect(ship.rect, mDefRectPaint)
+            }
     }
 
     fun finishEditing(){
