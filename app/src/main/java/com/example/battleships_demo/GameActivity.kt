@@ -156,7 +156,7 @@ class GameActivity : AppCompatActivity() {
                 }
 
                 if (!mIsEndgame) {
-                    cvMyAttacks.clearTouchCounter()
+                    cvMyAttacks.resetBoardTouchCounter()
                     //If I have hit an enemy ship on my turn I get an extra turn
                     if (checkIfAttackIsAHit(myAttackCoordinates)) {
                         mIsMyTurn.value = !mIsMyTurn.equals(true)
@@ -168,7 +168,8 @@ class GameActivity : AppCompatActivity() {
 
                         //This object is observed => Switching its value starts a coroutine
                         // in which I wait to receive the opponent's attack and to start my next turn
-                        mShouldWaitForOpponentAttack.value = mShouldWaitForOpponentAttack.value != true
+                        mShouldWaitForOpponentAttack.value =
+                            mShouldWaitForOpponentAttack.value != true
                     }
                 }
             }
