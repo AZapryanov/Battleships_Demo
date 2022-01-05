@@ -80,8 +80,8 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
         when(event?.action){
             // Once player touches the view
             MotionEvent.ACTION_DOWN -> {
-                Log.d(TAG, "onTouchEvent: action down triggered")
-                Log.d(TAG, "onTouchEvent: touch coords: x = $x, y = $y")
+//                Log.d(TAG, "onTouchEvent: action down triggered")
+//                Log.d(TAG, "onTouchEvent: touch coords: x = $x, y = $y")
                 value = false
 
                 // Determine which ship has been touched
@@ -109,9 +109,16 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                         mTmpRect.right = mTmpRect.left + ship.rect.width()
                         mTmpRect.bottom = mTmpRect.top + ship.rect.height()
 
-                        ship.rect.set(mTmpRect)
+                        ship.rect.set(RectF(mTmpRect))
                         // If ship is outside of the board it has invalid position
                         ship.hasInvalidPos = !mBoardRect.contains(ship.rect)
+                        // If ship intersects any other ship it has invalid position
+                        if(!ship.hasInvalidPos)
+                            for(otherShip in mShips){
+                                if(otherShip == ship) continue
+                                if(RectF.intersects(ship.rect, otherShip.rect))
+                                    ship.hasInvalidPos = true
+                            }
                         value = true
                     }
             }
@@ -122,6 +129,7 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                 for(ship in mShips)
                     if (ship.isTouched) {
                         if (ship.hasInvalidPos) {
+                            Log.d(TAG, "onTouchEvent: ${ship.rect}")
                             // Return ship to original position and break out of this event
                             ship.rect = RectF(ship.initialPos)
                             ship.hasInvalidPos = false  // Ship now has a valid position
@@ -135,7 +143,9 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                                 right = left + ship.rect.width()
                                 bottom = top + ship.rect.height()
                             }
-                            ship.rect.set(mTmpRect)
+                            Log.d(TAG, "action up: pos on release - ${ship.rect}")
+                            ship.rect.set(RectF(mTmpRect))
+                            Log.d(TAG, "action up: pos after snap - ${ship.rect}")
                             ship.isTouched = false
                         }
                         value = true
@@ -152,8 +162,11 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
         for(ship in mShips)
             if(ship.hasInvalidPos){
                 canvas?.drawRect(ship.rect, mRedPaint)
-            } else
+                canvas?.drawRect(ship.rect, mDefRectPaint)
+            } else {
                 canvas?.drawRect(ship.rect, mGreenPaint)
+                canvas?.drawRect(ship.rect, mDefRectPaint)
+            }
     }
 
     fun finishEditing(){
