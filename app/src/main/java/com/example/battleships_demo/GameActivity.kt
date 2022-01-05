@@ -9,7 +9,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.customviews.Board
-import com.example.battleships_demo.customviews.InteractiveBoard
 import kotlinx.android.synthetic.main.activity_game.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -98,11 +97,7 @@ class GameActivity : AppCompatActivity() {
                 mIsEndgame = checkIfGameHasEnded(cvMyShips.getBoardState())
 
                 if (mIsEndgame) {
-                    Log.d(TAG, "Game has ended.")
-                    cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-                    buttonEndTurn.visibility = View.GONE
-                    cvMyAttacks.visualizeRemainingOpponentShips(mOpponentShipsPositions)
-                    Toast.makeText(this, DEFEATED_MESSAGE, Toast.LENGTH_LONG).show()
+                    doEndgameProcedure(DEFEATED_MESSAGE)
                 }
             }
 
@@ -142,20 +137,11 @@ class GameActivity : AppCompatActivity() {
                 mIsEndgame = checkIfGameHasEnded(cvMyAttacks.getBoardState())
 
                 if (mIsEndgame) {
-                    Log.d(TAG, "Game has ended.")
-
-                    //Send my attack coordinates to opponent so that
-                    // his board can update to the final state and also register Endgame
-                    buttonEndTurn.visibility = View.GONE
-                    cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+                    doEndgameProcedure(WINNER_MESSAGE)
 
                     //Send my attack coordinates to the other player through BT
                     //so that his game ends too and he gets a message that he is defeated
                     BluetoothService.write(coordinatesToSend.toByteArray())
-
-                    //The remaining enemy ships are shown if I lose
-                    cvMyAttacks.visualizeRemainingOpponentShips(mOpponentShipsPositions)
-                    Toast.makeText(this, WINNER_MESSAGE, Toast.LENGTH_LONG).show()
                 }
 
                 if (!mIsEndgame) {
@@ -254,6 +240,26 @@ class GameActivity : AppCompatActivity() {
         return counter >= NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME
     }
 
+    private fun checkIfAttackIsAHit(attackCoordinates: Array<Int>): Boolean {
+        if (mOpponentShipsPositions[attackCoordinates[0]][attackCoordinates[1]] == 1) {
+            return true
+        }
+        return false
+    }
+
+    private fun doEndgameProcedure(messageToShow: String) {
+        //Lock all inputs
+        //----------------------------------------------
+        Log.d(TAG, "Game has ended.")
+        cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+        buttonEndTurn.visibility = View.GONE
+        //----------------------------------------------
+
+        //The remaining enemy ships are shown if game is lost
+        cvMyAttacks.visualizeRemainingOpponentShips(mOpponentShipsPositions)
+        Toast.makeText(this, messageToShow, Toast.LENGTH_LONG).show()
+    }
+
     private fun transformStringToIntMatrix(inputString: String?): Array<Array<Int>> {
         var counter = 0
         val outputMatrix = Array(10) { Array(10) { 0 } }
@@ -264,12 +270,5 @@ class GameActivity : AppCompatActivity() {
             }
         }
         return outputMatrix
-    }
-
-    private fun checkIfAttackIsAHit(attackCoordinates: Array<Int>): Boolean {
-        if (mOpponentShipsPositions[attackCoordinates[0]][attackCoordinates[1]] == 1) {
-            return true
-        }
-        return false
     }
 }
