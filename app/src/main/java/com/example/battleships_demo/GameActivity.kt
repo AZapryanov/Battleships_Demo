@@ -36,6 +36,7 @@ class GameActivity : AppCompatActivity() {
     private var mIsPlayerOne = true
     private var mIsNotFirstTurn = false
     private var mIsEndgame = false
+    private var mIsAttackAfterHit = false
 
     private lateinit var mOpponentShipsPositions: Array<Array<Int>>
     private lateinit var mOpponentAttackCoordinates: Array<Int>
@@ -85,21 +86,24 @@ class GameActivity : AppCompatActivity() {
             cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
             cvMyAttacks.setPhase(PHASE_MARK_ATTACK)
 
-            //My ships are updated based on the received attack coordinated from the opponent
-            if (mIsNotFirstTurn) {
-                val opponentAttackCoordinates = mOpponentAttackCoordinates
-                val updatedBoardState =
-                    updateMyShips(opponentAttackCoordinates, mMyShipsPositionsFromPreviousRound)
-                cvMyShips.setBoardState(updatedBoardState)
-                Log.d(TAG, "My ships updated with opponent attack.")
+            if(!mIsAttackAfterHit) {
+                //My ships are updated based on the received attack coordinated from the opponent
+                if (mIsNotFirstTurn) {
+                    val opponentAttackCoordinates = mOpponentAttackCoordinates
+                    val updatedBoardState =
+                        updateMyShips(opponentAttackCoordinates, mMyShipsPositionsFromPreviousRound)
+                    cvMyShips.setBoardState(updatedBoardState)
+                    Log.d(TAG, "My ships updated with opponent attack.")
 
-                mMyShipsPositionsFromPreviousRound = cvMyShips.getBoardState()
-                mIsEndgame = checkIfGameHasEnded(cvMyShips.getBoardState())
+                    mMyShipsPositionsFromPreviousRound = cvMyShips.getBoardState()
+                    mIsEndgame = checkIfGameHasEnded(cvMyShips.getBoardState())
 
-                if (mIsEndgame) {
-                    doEndgameProcedure(DEFEATED_MESSAGE)
+                    if (mIsEndgame) {
+                        doEndgameProcedure(DEFEATED_MESSAGE)
+                    }
                 }
             }
+            mIsAttackAfterHit = false
 
             if (!mIsEndgame) {
                 buttonEndTurn.visibility = View.VISIBLE
@@ -150,6 +154,7 @@ class GameActivity : AppCompatActivity() {
                     //If I have hit an enemy ship on my turn I get an extra turn
                     if (checkIfAttackIsAHit(myAttackCoordinates)) {
                         Toast.makeText(this, SECOND_ATTACK_AFTER_HIT, Toast.LENGTH_SHORT).show()
+                        mIsAttackAfterHit = true
                         Log.d(TAG, "The attack is a hit. Will do another attack")
                         mIsMyTurn.value = !mIsMyTurn.equals(true)
 
