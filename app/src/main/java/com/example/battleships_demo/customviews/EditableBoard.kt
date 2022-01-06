@@ -19,23 +19,7 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
     private var mTmpRect = RectF()
     private val mMarginTop = 60
     private val mMarginLeft = 30
-    private val mDetector: GestureDetectorCompat
-
-    init {
-        mDetector = GestureDetectorCompat(this.context, MyGestureListener())
-    }
-
-    private inner class MyGestureListener : GestureDetector.SimpleOnGestureListener() {
-        override fun onSingleTapUp(e: MotionEvent?): Boolean {
-            Log.d(TAG, "onSingleTapUp: called")
-            for(ship in mShips)
-                if(ship.isTouched){
-                    ship.isHorizontal = !ship.isHorizontal
-                    ship.isTouched = false
-                }
-            return super.onSingleTapUp(e)
-        }
-    }
+    private var actionMoveTriggered = false
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         // Cell height is equal to cell width for cells to be square
@@ -83,6 +67,7 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
 //                Log.d(TAG, "onTouchEvent: action down triggered")
 //                Log.d(TAG, "onTouchEvent: touch coords: x = $x, y = $y")
                 value = false
+                actionMoveTriggered = false
 
                 // Determine which ship has been touched
                 for(ship in mShips){
@@ -94,11 +79,12 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                         ship.isTouched = false
                     }
                 }
-                if (value) mDetector.onTouchEvent(event)
             }
             // If ACTION_DOWN returned true then do this
             MotionEvent.ACTION_MOVE -> {
                 value = false
+                actionMoveTriggered = true
+                Log.d(TAG, "moved: $actionMoveTriggered")
                 // Change the ship's rect accordingly
                 for(ship in mShips)
                     if(ship.isTouched){
@@ -110,46 +96,59 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                         mTmpRect.bottom = mTmpRect.top + ship.rect.height()
 
                         ship.rect.set(RectF(mTmpRect))
-                        // If ship is outside of the board it has invalid position
-                        ship.hasInvalidPos = !mBoardRect.contains(ship.rect)
-                        // If ship intersects any other ship it has invalid position
-                        if(!ship.hasInvalidPos)
-                            for(otherShip in mShips){
-                                if(otherShip == ship) continue
-                                if(RectF.intersects(ship.rect, otherShip.rect))
-                                    ship.hasInvalidPos = true
-                            }
+                        evaluatePos(ship)
                         value = true
                     }
             }
             MotionEvent.ACTION_UP -> {
-                val xInBoardSpace = (x!! / mCellWidth).toInt()
-                val yInBoardSpace = (y!! / mCellHeight).toInt()
-
-                for(ship in mShips)
-                    if (ship.isTouched) {
-                        if (ship.hasInvalidPos) {
-                            Log.d(TAG, "onTouchEvent: ${ship.rect}")
-                            // Return ship to original position and break out of this event
-                            ship.rect = RectF(ship.initialPos)
-                            ship.hasInvalidPos = false  // Ship now has a valid position
-                            ship.isTouched = false
-                            invalidate()
-                            return true
-                        } else {
-                            mTmpRect.apply {
-                                left = xInBoardSpace * mCellWidth
-                                top = yInBoardSpace * mCellHeight
-                                right = left + ship.rect.width()
-                                bottom = top + ship.rect.height()
+                // If the ship was tapped without being moved
+                if (!actionMoveTriggered){
+                    Log.d(TAG, "onTouchEvent: single tap")
+                    for(ship in mShips)
+                        if(ship.isTouched){
+                            ship.turn()
+                            evaluatePos(ship)
+                            if (ship.hasInvalidPos) {
+                                // If the touched ship had invalid position upon releasing finger
+                                // Return ship to original position and break out of this event
+                                ship.returnToInitPos()
+                                ship.hasInvalidPos = false  // Ship now has a valid position
+                                ship.isTouched = false
+                                invalidate()
+                                return true
                             }
-                            Log.d(TAG, "action up: pos on release - ${ship.rect}")
-                            ship.rect.set(RectF(mTmpRect))
-                            Log.d(TAG, "action up: pos after snap - ${ship.rect}")
-                            ship.isTouched = false
                         }
-                        value = true
-                    }
+                    value = true
+                }
+                // If the ship was moved
+                else {
+                    Log.d(TAG, "onTouchEvent: ACTION UP triggered")
+                    val xInBoardSpace = (x!! / mCellWidth).toInt()
+                    val yInBoardSpace = (y!! / mCellHeight).toInt()
+
+                    for(ship in mShips)
+                        if (ship.isTouched) {
+                            if (ship.hasInvalidPos) {
+                                ship.returnToInitPos()
+                                ship.hasInvalidPos = false
+                                ship.isTouched = false
+                                invalidate()
+                                return true
+                            } else {
+                                // If the ship has valid position upon releasing finger
+                                // snap it to the cell where finger is
+                                mTmpRect.apply {
+                                    left = xInBoardSpace * mCellWidth
+                                    top = yInBoardSpace * mCellHeight
+                                    right = left + ship.rect.width()
+                                    bottom = top + ship.rect.height()
+                                }
+                                ship.rect.set(RectF(mTmpRect))
+                                ship.isTouched = false
+                            }
+                            value = true
+                        }
+                }
             }
         }
 
@@ -171,12 +170,37 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
 
     fun finishEditing(){
         // Set the board state according to where the ships are placed
-        for(ship in mShips)
-            for(i in 0 until ship.size){
-                // Convert ship coords to board coords
-                val xInBoardSpace = (ship.rect.left / mCellWidth).toInt() + i
-                val yInBoardSpace = (ship.rect.top / mCellHeight).toInt()
-                mBoardState[xInBoardSpace][yInBoardSpace] = 1
+        for(ship in mShips) {
+            if (ship.isHorizontal) {
+                for (i in 0 until ship.size) {
+                    // Convert ship coords to board coords
+                    val xInBoardSpace = (ship.rect.left / mCellWidth).toInt() + i
+                    val yInBoardSpace = (ship.rect.top / mCellHeight).toInt()
+                    mBoardState[xInBoardSpace][yInBoardSpace] = 1
+                }
+            } else {
+                for (i in 0 until ship.size) {
+                    val xInBoardSpace = (ship.rect.left / mCellWidth).toInt()
+                    val yInBoardSpace = (ship.rect.top / mCellHeight).toInt() + i
+                    mBoardState[xInBoardSpace][yInBoardSpace] = 1
+                }
+            }
+        }
+    }
+
+    /**
+     * Takes a ship and changes it's hasValidPosition
+     */
+    private fun evaluatePos(ship: Ship){
+        // If ship is outside of the board it has invalid position
+        ship.hasInvalidPos = !mBoardRect.contains(ship.rect)
+        // If ship intersects any other ship it has invalid position
+        if(!ship.hasInvalidPos)
+            // Check collisions
+            for(otherShip in mShips){
+                if(otherShip == ship) continue
+                if(RectF.intersects(ship.rect, otherShip.rect))
+                    ship.hasInvalidPos = true
             }
     }
 }
