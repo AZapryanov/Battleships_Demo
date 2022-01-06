@@ -13,9 +13,5 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btn_start_connect_activity).setOnClickListener {
             startActivity(Intent(this, ConnectActivity::class.java))
         }
-
-        findViewById<Button>(R.id.btn_test).setOnClickListener {
-            startActivity(Intent(this, PlaceShipsActivity::class.java))
-        }
     }
 }
