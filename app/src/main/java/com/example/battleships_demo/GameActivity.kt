@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.customviews.Board
+import com.example.battleships_demo.customviews.InteractiveBoard
 import kotlinx.android.synthetic.main.activity_game.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -207,11 +208,11 @@ class GameActivity : AppCompatActivity() {
         val opponentAttackX = myAttackCoordinates[0]
         val opponentAttackY = myAttackCoordinates[1]
 
-        if (mOpponentShipsPositions[opponentAttackX][opponentAttackY] == Board.EMPTY_BOX) {
-            myAttacksPositions[opponentAttackX][opponentAttackY] = Board.CROSS
+        if (mOpponentShipsPositions[opponentAttackX][opponentAttackY] == InteractiveBoard.EMPTY_BOX) {
+            myAttacksPositions[opponentAttackX][opponentAttackY] = InteractiveBoard.CROSS
 
-        } else if (mOpponentShipsPositions[opponentAttackX][opponentAttackY] == Board.SHIP_PART) {
-            myAttacksPositions[opponentAttackX][opponentAttackY] = Board.SHIP_PART_HIT
+        } else if (mOpponentShipsPositions[opponentAttackX][opponentAttackY] == InteractiveBoard.SHIP_PART) {
+            myAttacksPositions[opponentAttackX][opponentAttackY] = InteractiveBoard.SHIP_PART_HIT
         }
         return myAttacksPositions
     }
@@ -229,11 +230,11 @@ class GameActivity : AppCompatActivity() {
             val opponentAttackX = opponentAttackCoordinates[i]
             val opponentAttackY = opponentAttackCoordinates[i + 1]
 
-            if (myShipsPositions[opponentAttackX][opponentAttackY] == Board.EMPTY_BOX) {
-                myShipsPositions[opponentAttackX][opponentAttackY] = Board.CROSS
+            if (myShipsPositions[opponentAttackX][opponentAttackY] == InteractiveBoard.EMPTY_BOX) {
+                myShipsPositions[opponentAttackX][opponentAttackY] = InteractiveBoard.CROSS
 
-            } else if (myShipsPositions[opponentAttackX][opponentAttackY] == Board.SHIP_PART) {
-                myShipsPositions[opponentAttackX][opponentAttackY] = Board.SHIP_PART_HIT
+            } else if (myShipsPositions[opponentAttackX][opponentAttackY] == InteractiveBoard.SHIP_PART) {
+                myShipsPositions[opponentAttackX][opponentAttackY] = InteractiveBoard.SHIP_PART_HIT
             }
         }
 

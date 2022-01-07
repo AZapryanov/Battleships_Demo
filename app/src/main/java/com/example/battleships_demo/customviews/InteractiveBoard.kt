@@ -1,12 +1,19 @@
 package com.example.battleships_demo.customviews
 
 import android.content.Context
+import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.MotionEvent
 
 class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, attrs) {
     companion object {
         private const val TAG = "InteractiveBoard"
+        const val DRAW_CROSS = "drawCross"
+        const val DRAW_RED_SHIP_PART_WITH_CROSS = "drawRedShipPartWithCross"
+        const val EMPTY_BOX = 0
+        const val SHIP_PART = 1
+        const val CROSS = 2
+        const val SHIP_PART_HIT = 3
     }
 
     private var mWhatToDoOnTouch: String = ""
@@ -66,6 +73,56 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
         }
     }
 
+    override fun onDraw(canvas: Canvas?) {
+        super.onDraw(canvas)
+
+        for (i in 0 until mBoardSize) {
+            for (j in 0 until mBoardSize) {
+                val left = mCellWidth * i
+                val top = mCellHeight * j
+                val right = left + mCellWidth
+                val bottom = top + mCellHeight
+                mCellRect.set(left, top, right, bottom)
+
+                when {
+                    mBoardState[i][j] == EMPTY_BOX -> {
+                        canvas?.drawRect(mCellRect, mDefRectPaint)
+                    }
+                    mBoardState[i][j] == SHIP_PART -> {
+                        canvas?.drawRect(mCellRect, mGreenPaint)
+                        canvas?.drawRect(mCellRect, mDefRectPaint)
+                    }
+                    mBoardState[i][j] == CROSS -> {
+                        canvas?.drawRect(mCellRect, mDefRectPaint)
+                        drawCross(canvas)
+                    }
+                    mBoardState[i][j] == SHIP_PART_HIT -> {
+                        canvas?.drawRect(mCellRect, mRedPaint)
+                        canvas?.drawRect(mCellRect, mDefRectPaint)
+                        drawCross(canvas)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun drawCross(canvas: Canvas?) {
+        canvas?.drawLine(
+            mCellRect.left + 15,
+            mCellRect.top + 15,
+            mCellRect.right - 15,
+            mCellRect.bottom - 15,
+            mDefRectPaint
+        )
+        canvas?.drawLine(
+            mCellRect.left + 15,
+            mCellRect.bottom - 15,
+            mCellRect.right - 15,
+            mCellRect.top + 15,
+            mDefRectPaint
+        )
+    }
+
     fun setPhase(phase: String) {
         mCurrentPhase = phase
     }
@@ -83,10 +140,6 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
         return mLastRecordedTouchInput
     }
 
-    fun resetBoardTouchCounter() {
-        mTouchCounter = 0
-    }
-
     fun visualizeRemainingOpponentShips(opponentShips: Array<Array<Int>>) {
         for (i in 0 until mBoardSize) {
             for (j in 0 until mBoardSize) {
@@ -100,5 +153,9 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
 
     fun getTouchCounter(): Int {
         return mTouchCounter
+    }
+
+    fun resetBoardTouchCounter() {
+        mTouchCounter = 0
     }
 }

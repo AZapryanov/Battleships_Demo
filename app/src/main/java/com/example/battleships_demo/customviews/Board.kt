@@ -26,12 +26,6 @@ open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     companion object {
         private const val TAG = "Board"
-        const val DRAW_CROSS = "drawCross"
-        const val DRAW_RED_SHIP_PART_WITH_CROSS = "drawRedShipPartWithCross"
-        const val EMPTY_BOX = 0
-        const val SHIP_PART = 1
-        const val CROSS = 2
-        const val SHIP_PART_HIT = 3
     }
 
     init {
@@ -81,46 +75,12 @@ open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
                 val bottom = top + mCellHeight
                 mCellRect.set(left, top, right, bottom)
 
-                when {
-                    mBoardState[i][j] == 0 -> {
-                        canvas?.drawRect(mCellRect, mDefRectPaint)
-                    }
-                    mBoardState[i][j] == 1 -> {
-                        canvas?.drawRect(mCellRect, mGreenPaint)
-                        canvas?.drawRect(mCellRect, mDefRectPaint)
-                    }
-                    mBoardState[i][j] == 2 -> {
-                        canvas?.drawRect(mCellRect,mDefRectPaint)
-                        drawCross(canvas)
-                    }
-                    mBoardState[i][j] == 3 -> {
-                        canvas?.drawRect(mCellRect, mRedPaint)
-                        canvas?.drawRect(mCellRect, mDefRectPaint)
-                        drawCross(canvas)
-                    }
-                }
+                canvas?.drawRect(mCellRect, mDefRectPaint)
             }
         }
     }
 
-    private fun drawCross(canvas: Canvas?) {
-        canvas?.drawLine(
-            mCellRect.left + 15,
-            mCellRect.top + 15,
-            mCellRect.right - 15,
-            mCellRect.bottom - 15,
-            mDefRectPaint
-        )
-        canvas?.drawLine(
-            mCellRect.left + 15,
-            mCellRect.bottom - 15,
-            mCellRect.right - 15,
-            mCellRect.top + 15,
-            mDefRectPaint
-        )
-    }
-
-    fun getBoardStateAsString(): String? {
+    fun getBoardStateAsString(): String {
         var boardState = ""
         for (i in 0 until mBoardSize) {
             for (j in 0 until mBoardSize) {
