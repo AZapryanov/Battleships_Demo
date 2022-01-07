@@ -4,4 +4,6 @@
 4. Research what other type of data could be sent as extra and byte array, so that we do not need to make and use functions that transform strings to matrices and vice versa
 5. Better differentiation which jobs should be done by the GameActivity and which in the Board class and its child class - InteractiveBoard, in order to minimize sending around entire board states
 6. The updateMyAttacks and updateMyShips functions in GameActivity are very similar and should be combined into one;
-7. 
+7. Remove handler from connect activity and make interface
+8. Decouple ship class and place ships activity
+9. Fix the way you flip ships
