@@ -2,8 +2,9 @@
 2. Merge game activity and connect activity
 3. Sending only strings as extras and through BT as byte arrays is not optimal
 4. Research what other type of data could be sent as extra and byte array, so that we do not need to make and use functions that transform strings to matrices and vice versa
-5. Better differentiation which jobs should be done by the GameActivity and which in the Board class and its child class - InteractiveBoard, in order to minimize sending around entire board states
-6. The updateMyAttacks and updateMyShips functions in GameActivity are very similar and should be combined into one;
-7. Remove handler from connect activity and make interface
-8. Decouple ship class and place ships activity
-9. Fix the way you flip ships
+5. Better differentiation which jobs should be done by the GameActivity and which in the InteractiveBoard class
+6. Remove handler from connect activity and make interface
+7. Decouple ship class and place ships activity
+8. Fix the way you flip ships
+9. The Board class contains a drawCross function and logic in onDraw that are not needed in the EditableBoard, but are needed in the InteractiveBoard. Hence, they should be moved to the InteractiveBoard
+10. In the GameActivity the mutable live data objects mIsMyTurn and mShouldWaitForOpponentAttack are of type Boolean. When they change value from true to false and vice versa the blocks of code in the respective observers execute. This is not a good practice and causes confusion, because the code executes both on true and false
