@@ -25,11 +25,28 @@
         android:id="@+id/btn_ready"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:backgroundTint="@color/green_sea"
         android:text="Ready"
         android:textAllCaps="false"
         android:textSize="22sp"
         app:layout_constraintBottom_toTopOf="@+id/horizontalGuideline3"
+        app:layout_constraintEnd_toStartOf="@+id/verticalGuideline2"
+        app:layout_constraintStart_toStartOf="@+id/verticalGuideline1"
+        app:layout_constraintTop_toTopOf="@+id/horizontalGuideline2" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:padding="5dp"
+        android:layout_marginBottom="14dp"
+        android:textSize="17sp"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:text="@string/place_ships_instructions"
+        app:layout_constraintBottom_toTopOf="@+id/btn_ready"
         app:layout_constraintEnd_toStartOf="@+id/verticalGuideline2"
         app:layout_constraintStart_toStartOf="@+id/verticalGuideline1"
         app:layout_constraintTop_toTopOf="@+id/horizontalGuideline2" />
