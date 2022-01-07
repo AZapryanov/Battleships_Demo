@@ -53,7 +53,16 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
                     // Return ship to original position and break out of this event
                     ship.returnToInitPos()
                     ship.hasInvalidPos = false  // Ship now has a valid position
-                    ship.isTouched = false
+                } else {
+                    val xInBoardSpace = (e!!.x / mCellWidth).toInt()
+                    val yInBoardSpace = (e.y / mCellHeight).toInt()
+                    mTmpRect.apply {
+                        left = xInBoardSpace * mCellWidth
+                        top = yInBoardSpace * mCellHeight
+                        right = left + ship.rect.width()
+                        bottom = top + ship.rect.height()
+                    }
+                    ship.rect.set(RectF(mTmpRect))
                 }
             }
         invalidate()
