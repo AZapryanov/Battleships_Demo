@@ -1,2 +1,7 @@
 1. Add view models for connect activity and game activity
 2. Merge game activity and connect activity
+3. Sending only strings as extras and through BT as byte arrays is not optimal
+4. Research what other type of data could be sent as extra and byte array, so that we do not need to make and use functions that transform strings to matrices and vice versa
+5. Better differentiation which jobs should be done by the GameActivity and which in the Board class and its child class - InteractiveBoard, in order to minimize sending around entire board states
+6. The updateMyAttacks and updateMyShips functions in GameActivity are very similar and should be combined into one;
+7. 
