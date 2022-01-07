@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">Battleships_Demo</string>
     <string name="title_paired_devices">Paired devices</string>
+    <string name="place_ships_instructions">The green rectangles are your ships. Drag them
+    on the board to place them. Once placed tap to flip them vertically.</string>
 </resources>

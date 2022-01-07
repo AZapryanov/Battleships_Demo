@@ -9,7 +9,10 @@ import android.view.MotionEvent
 import androidx.core.view.GestureDetectorCompat
 import com.example.battleships_demo.Ship
 
-class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attrs) {
+class EditableBoard(context: Context, attrs: AttributeSet) :
+            Board(context, attrs),
+            GestureDetector.OnGestureListener {
+
     companion object{
         private const val TAG = "EditableBoard"
     }
@@ -19,7 +22,71 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
     private var mTmpRect = RectF()
     private val mMarginTop = 60
     private val mMarginLeft = 30
-    private var actionMoveTriggered = false
+
+    private val mDetector = GestureDetectorCompat(this.context, this)
+
+    override fun onDown(e: MotionEvent?): Boolean {
+        // Set
+        var value = false
+
+        // Determine which ship has been touched
+        for(ship in mShips){
+            if (ship.rect.contains(e!!.x, e.y)){
+                Log.d(TAG, "onDown: ship of size ${ship.size}")
+                ship.isTouched = true
+                value = true
+            } else {
+                ship.isTouched = false
+            }
+        }
+        return value
+    }
+
+    override fun onSingleTapUp(e: MotionEvent?): Boolean {
+        Log.d(TAG, "onSingleTapUp: $e")
+        for(ship in mShips)
+            if(ship.isTouched){
+                ship.turn()
+                evaluatePos(ship)
+                if (ship.hasInvalidPos) {
+                    // If the touched ship had invalid position upon releasing finger
+                    // Return ship to original position and break out of this event
+                    ship.returnToInitPos()
+                    ship.hasInvalidPos = false  // Ship now has a valid position
+                    ship.isTouched = false
+                }
+            }
+        invalidate()
+        return true
+    }
+
+    override fun onShowPress(event: MotionEvent) {
+        Log.d(TAG, "onShowPress: $event")
+    }
+
+    override fun onScroll(
+        e1: MotionEvent?,
+        e2: MotionEvent?,
+        distanceX: Float,
+        distanceY: Float
+    ): Boolean {
+        Log.d(TAG, "onScroll: $e1\n$e2")
+        return false
+    }
+
+    override fun onLongPress(e: MotionEvent?) {
+        Log.d(TAG, "onLongPress: $e")
+    }
+
+    override fun onFling(
+        e1: MotionEvent?,
+        e2: MotionEvent?,
+        velocityX: Float,
+        velocityY: Float
+    ): Boolean {
+        Log.d(TAG, "onFling: $e1\n$e2")
+        return false
+    }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         // Cell height is equal to cell width for cells to be square
@@ -56,72 +123,32 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        var value = super.onTouchEvent(event)
+        return if (mDetector.onTouchEvent(event)) {
+            true
+        } else {
+            var value = super.onTouchEvent(event)
+            val x = event?.x
+            val y = event?.y
 
-        val x = event?.x
-        val y = event?.y
-
-        when(event?.action){
-            // Once player touches the view
-            MotionEvent.ACTION_DOWN -> {
-//                Log.d(TAG, "onTouchEvent: action down triggered")
-//                Log.d(TAG, "onTouchEvent: touch coords: x = $x, y = $y")
-                value = false
-                actionMoveTriggered = false
-
-                // Determine which ship has been touched
-                for(ship in mShips){
-                    if (ship.rect.contains(x!!, y!!)){
-                        Log.d(TAG, "onTouchEvent: ship of size ${ship.size}")
-                        ship.isTouched = true
-                        value = true
-                    } else {
-                        ship.isTouched = false
-                    }
-                }
-            }
-            // If ACTION_DOWN returned true then do this
-            MotionEvent.ACTION_MOVE -> {
-                value = false
-                actionMoveTriggered = true
-                Log.d(TAG, "moved: $actionMoveTriggered")
-                // Change the ship's rect accordingly
-                for(ship in mShips)
-                    if(ship.isTouched){
-                        // left and top are always gonna be where the touch coords are
-                        // "- mCell../2" makes your finger be in the center of the ship's first square
-                        mTmpRect.left = x!! - mCellWidth/2
-                        mTmpRect.top = y!! - mCellHeight/2
-                        mTmpRect.right = mTmpRect.left + ship.rect.width()
-                        mTmpRect.bottom = mTmpRect.top + ship.rect.height()
-
-                        ship.rect.set(RectF(mTmpRect))
-                        evaluatePos(ship)
-                        value = true
-                    }
-            }
-            MotionEvent.ACTION_UP -> {
-                // If the ship was tapped without being moved
-                if (!actionMoveTriggered){
-                    Log.d(TAG, "onTouchEvent: single tap")
+            when(event?.action){
+                MotionEvent.ACTION_MOVE -> {
+                    value = false
+                    // Change the ship's rect accordingly
                     for(ship in mShips)
                         if(ship.isTouched){
-                            ship.turn()
+                            // left and top are always gonna be where the touch coords are
+                            // "- mCell../2" makes your finger be in the center of the ship's first square
+                            mTmpRect.left = x!! - mCellWidth/2
+                            mTmpRect.top = y!! - mCellHeight/2
+                            mTmpRect.right = mTmpRect.left + ship.rect.width()
+                            mTmpRect.bottom = mTmpRect.top + ship.rect.height()
+
+                            ship.rect.set(RectF(mTmpRect))
                             evaluatePos(ship)
-                            if (ship.hasInvalidPos) {
-                                // If the touched ship had invalid position upon releasing finger
-                                // Return ship to original position and break out of this event
-                                ship.returnToInitPos()
-                                ship.hasInvalidPos = false  // Ship now has a valid position
-                                ship.isTouched = false
-                                invalidate()
-                                return true
-                            }
+                            value = true
                         }
-                    value = true
                 }
-                // If the ship was moved
-                else {
+                MotionEvent.ACTION_UP -> {
                     Log.d(TAG, "onTouchEvent: ACTION UP triggered")
                     val xInBoardSpace = (x!! / mCellWidth).toInt()
                     val yInBoardSpace = (y!! / mCellHeight).toInt()
@@ -131,7 +158,6 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                             if (ship.hasInvalidPos) {
                                 ship.returnToInitPos()
                                 ship.hasInvalidPos = false
-                                ship.isTouched = false
                                 invalidate()
                                 return true
                             } else {
@@ -144,16 +170,15 @@ class EditableBoard(context: Context, attrs: AttributeSet) : Board(context, attr
                                     bottom = top + ship.rect.height()
                                 }
                                 ship.rect.set(RectF(mTmpRect))
-                                ship.isTouched = false
                             }
                             value = true
                         }
                 }
             }
-        }
 
-        invalidate()
-        return value
+            invalidate()
+            return value
+        }
     }
 
     override fun onDraw(canvas: Canvas?) {
