@@ -17,7 +17,7 @@ import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.bluetooth.Constants
 
-class ConnectActivity : AppCompatActivity() {
+class ConnectActivity : AppCompatActivity(), BluetoothService.BtListener {
 
     private var mConnectedDeviceName: String? = null
     private var mOutStringBuffer: StringBuffer? = null
@@ -47,6 +47,9 @@ class ConnectActivity : AppCompatActivity() {
             // Callback function:
             if (result.resultCode == RESULT_OK){
                 connectDevice(result.data, true)
+            } else if(result.resultCode == RESULT_CANCELED) {
+                BluetoothService.stop()
+                BluetoothService.start()
             }
         }
 
@@ -72,11 +75,31 @@ class ConnectActivity : AppCompatActivity() {
             )
         }
         // Initialize the BluetoothChatService to perform bluetooth connections
-        BluetoothService.init(this, mHandler)
+        BluetoothService.init(this, this)
         // Initialize the buffer for outgoing messages
         mOutStringBuffer = StringBuffer()
 
         BluetoothService.start()
+    }
+
+    override fun onAccept() {
+        TODO("Not yet implemented")
+    }
+
+    override fun onConnect() {
+        TODO("Not yet implemented")
+    }
+
+    override fun onConnected() {
+        TODO("Not yet implemented")
+    }
+
+    override fun onRead(bytes: ByteArray?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onWrite(bytes: ByteArray?) {
+        TODO("Not yet implemented")
     }
 
     /**
