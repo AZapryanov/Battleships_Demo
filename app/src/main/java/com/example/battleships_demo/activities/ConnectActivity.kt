@@ -1,4 +1,4 @@
-package com.example.battleships_demo
+package com.example.battleships_demo.activities
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
@@ -13,6 +13,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.bluetooth.Constants
 import com.example.battleships_demo.bluetooth.DeviceListActivity

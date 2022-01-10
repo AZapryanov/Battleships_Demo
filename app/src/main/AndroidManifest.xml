@@ -14,19 +14,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Battleships_Demo">
         <activity
-            android:name=".PlaceShipsActivity"
+            android:name=".activities.PlaceShipsActivity"
             android:exported="false" />
         <activity
             android:name=".bluetooth.DeviceListActivity"
             android:exported="false"/>
         <activity
-            android:name=".ConnectActivity"
+            android:name=".activities.ConnectActivity"
             android:exported="false" />
         <activity
-            android:name=".GameActivity"
+            android:name=".activities.GameActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

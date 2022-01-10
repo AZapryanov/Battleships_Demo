@@ -1,10 +1,11 @@
-package com.example.battleships_demo
+package com.example.battleships_demo.activities
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.customviews.EditableBoard
 import kotlinx.coroutines.CoroutineScope

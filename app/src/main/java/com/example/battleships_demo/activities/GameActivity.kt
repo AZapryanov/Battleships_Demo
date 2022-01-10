@@ -1,4 +1,4 @@
-package com.example.battleships_demo
+package com.example.battleships_demo.activities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -7,8 +7,8 @@ import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
+import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
-import com.example.battleships_demo.customviews.Board
 import com.example.battleships_demo.customviews.InteractiveBoard
 import kotlinx.android.synthetic.main.activity_game.*
 import kotlinx.coroutines.Dispatchers
