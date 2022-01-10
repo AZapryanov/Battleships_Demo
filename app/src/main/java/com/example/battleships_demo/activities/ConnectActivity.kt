@@ -41,9 +41,6 @@ class ConnectActivity : AppCompatActivity() {
 
         mTextName = findViewById(R.id.text_device_name)
 
-        val manager = this.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        mBluetoothAdapter = manager.adapter
-
         // This is a higher order function that runs a callback after we set the result
         // from DeviceListActivity and finish() it
         val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -57,14 +54,13 @@ class ConnectActivity : AppCompatActivity() {
             val intent = Intent(this, DeviceListActivity::class.java)
             resultLauncher.launch(intent)
         }
-
-//        findViewById<Button>(R.id.btn_send_hi).setOnClickListener {
-//            BluetoothService.write("Hi $mConnectedDeviceName".toByteArray())
-//        }
     }
 
     override fun onStart() {
         super.onStart()
+
+        val manager = this.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        mBluetoothAdapter = manager.adapter
         if(mBluetoothAdapter == null) return
 
         if (!mBluetoothAdapter!!.isEnabled) {
