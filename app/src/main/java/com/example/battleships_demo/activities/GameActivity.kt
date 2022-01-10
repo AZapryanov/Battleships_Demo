@@ -85,8 +85,10 @@ class GameActivity : AppCompatActivity() {
             mIsStartOfTheGame = false
 
             if (mIsPlayerOne) {
+                Log.d(TAG, "Starting my first turn.")
                 startNextTurn()
             } else {
+                Log.d(TAG, "Waiting for opponents first turn.")
                 mIsNotFirstTurn = true
                 startWaitingForOpponentAttack()
             }
@@ -218,7 +220,9 @@ class GameActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        executeOnStartIfWasOnPause()
+        if (mIsActivityPaused) {
+            executeOnStartIfWasOnPause()
+        }
         Log.d(TAG, "Entered onStart")
         Log.d(TAG, "Restored the state of the game - $mIsActivityPaused")
     }
@@ -368,7 +372,7 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun startWaitingForOpponentAttack() = if (mShouldWaitForOpponentAttack.value == SWAPPABLE_ONE
-        || mShouldStartMyNextTurn.value == null) {
+        || mShouldWaitForOpponentAttack.value == null) {
         mShouldWaitForOpponentAttack.value = SWAPPABLE_TWO
     } else {
         mShouldWaitForOpponentAttack.value = SWAPPABLE_ONE
