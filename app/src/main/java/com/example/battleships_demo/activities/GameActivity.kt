@@ -28,14 +28,16 @@ class GameActivity : AppCompatActivity() {
         private const val NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME = 17
         private const val INITIAL_ARRAY_VALUE = 15
         private const val INITIAL_ARRAY_SIZE = 50
+        private const val SWAPPABLE_ONE = 1
+        private const val SWAPPABLE_TWO = 2
     }
 
-    private val mIsMyTurn: MutableLiveData<Boolean> by lazy {
-        MutableLiveData<Boolean>()
+    private val mShouldStartMyNextTurn: MutableLiveData<Int> by lazy {
+        MutableLiveData<Int>()
     }
 
-    private val mShouldWaitForOpponentAttack: MutableLiveData<Boolean> by lazy {
-        MutableLiveData<Boolean>()
+    private val mShouldWaitForOpponentAttack: MutableLiveData<Int> by lazy {
+        MutableLiveData<Int>()
     }
 
     private var mIsPlayerOne = true
@@ -48,9 +50,6 @@ class GameActivity : AppCompatActivity() {
 
     private lateinit var mOpponentShipsPositions: Array<Array<Int>>
     private lateinit var mOpponentAttackCoordinates: Array<Int>
-
-//    private lateinit var mMyAttacksPositionsFromPreviousRound: Array<Array<Int>>
-//    private lateinit var mMyShipsPositionsFromPreviousRound: Array<Array<Int>>
 
     private lateinit var gameActivityViewModel: GameActivityViewModel
 
@@ -86,17 +85,17 @@ class GameActivity : AppCompatActivity() {
             mIsStartOfTheGame = false
 
             if (mIsPlayerOne) {
-                mIsMyTurn.value = true
+                startNextTurn()
             } else {
                 mIsNotFirstTurn = true
-                mShouldWaitForOpponentAttack.value = mShouldWaitForOpponentAttack.value != true
+                startWaitingForOpponentAttack()
             }
         }
         //-----------------------------------------------------------------------------------------------------------------------
 
         //If the value of mIsMyTurn changes due to received opponent attack coordinates through BT,
         //meaning that he finished his turn, the following code executes
-        mIsMyTurn.observe(this, {
+        mShouldStartMyNextTurn.observe(this, {
             Log.d(TAG, "My turn starts.")
             cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
             cvMyAttacks.setPhase(PHASE_MARK_ATTACK)
@@ -168,7 +167,7 @@ class GameActivity : AppCompatActivity() {
                         Toast.makeText(this, SECOND_ATTACK_AFTER_HIT, Toast.LENGTH_SHORT).show()
                         mIsAttackAfterHit = true
                         Log.d(TAG, "The attack is a hit. Will do another attack")
-                        mIsMyTurn.value = !mIsMyTurn.equals(true)
+                        startNextTurn()
 
                     } else {
                         //Send my attack coordinates to the other player through BT
@@ -178,8 +177,7 @@ class GameActivity : AppCompatActivity() {
 
                         //This object is observed => Switching its value starts a coroutine
                         // in which I wait to receive the opponent's attack and to start my next turn
-                        mShouldWaitForOpponentAttack.value =
-                            mShouldWaitForOpponentAttack.value != true
+                        startWaitingForOpponentAttack()
                     }
                 }
             }
@@ -208,7 +206,7 @@ class GameActivity : AppCompatActivity() {
                     mIsWaitingForOpponentTurn = false
                     //When attack coordinates are received from the other player through BT,
                     //by switching the value of mIsMyTurn (it is observed), my next turn is started
-                    mIsMyTurn.value = !mIsMyTurn.equals(true)
+                    startNextTurn()
                 }
             }
         })
@@ -343,13 +341,12 @@ class GameActivity : AppCompatActivity() {
             buttonEndTurn.visibility = View.GONE
             setLifecycleRelatedBooleansToFalse()
 
-            mShouldWaitForOpponentAttack.value =
-                mShouldWaitForOpponentAttack.value != true
+            startWaitingForOpponentAttack()
         } else {
             //Reset to false the values of the booleans which give information
                 // in what state was the game before the activity went onPause
             setLifecycleRelatedBooleansToFalse()
-            mIsMyTurn.value = !mIsMyTurn.equals(true)
+            startNextTurn()
         }
     }
 
@@ -361,5 +358,19 @@ class GameActivity : AppCompatActivity() {
     private fun setLifecycleRelatedBooleansToFalse() {
         mIsWaitingForOpponentTurn = false
         mIsActivityPaused = false
+    }
+
+    private fun startNextTurn() = if (mShouldStartMyNextTurn.value == SWAPPABLE_ONE
+        || mShouldStartMyNextTurn.value == null) {
+        mShouldStartMyNextTurn.value = SWAPPABLE_TWO
+    } else {
+        mShouldStartMyNextTurn.value = SWAPPABLE_ONE
+    }
+
+    private fun startWaitingForOpponentAttack() = if (mShouldWaitForOpponentAttack.value == SWAPPABLE_ONE
+        || mShouldStartMyNextTurn.value == null) {
+        mShouldWaitForOpponentAttack.value = SWAPPABLE_TWO
+    } else {
+        mShouldWaitForOpponentAttack.value = SWAPPABLE_ONE
     }
 }
