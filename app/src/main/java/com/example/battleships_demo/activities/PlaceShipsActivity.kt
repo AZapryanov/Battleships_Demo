@@ -47,10 +47,10 @@ class PlaceShipsActivity : AppCompatActivity() {
             Log.d(TAG, "onCreate: ${mBoard.getBoardState()}")
             
             mHasClickedReady = true
-            mMyShipsAsString = mBoard.getBoardStateAsString()!!
+            mMyShipsAsString = mBoard.getBoardStateAsString()
 
             // Send your board to the other player
-            BluetoothService.write(mBoard.getBoardStateAsString()!!.toByteArray())
+            BluetoothService.write(mBoard.getBoardStateAsString().toByteArray())
 
             CoroutineScope(Dispatchers.IO).launch {
                 startGameActivity()
