@@ -6,10 +6,12 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.customviews.InteractiveBoard
+import com.example.battleships_demo.viemodels.GameActivityViewModel
 import kotlinx.android.synthetic.main.activity_game.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,12 +42,17 @@ class GameActivity : AppCompatActivity() {
     private var mIsNotFirstTurn = false
     private var mIsEndgame = false
     private var mIsAttackAfterHit = false
+    private var mIsStartOfTheGame = true
+    private var mIsWaitingForOpponentTurn = false
+    private var mIsActivityPaused = false
 
     private lateinit var mOpponentShipsPositions: Array<Array<Int>>
     private lateinit var mOpponentAttackCoordinates: Array<Int>
 
-    private lateinit var mMyAttacksPositionsFromPreviousRound: Array<Array<Int>>
-    private lateinit var mMyShipsPositionsFromPreviousRound: Array<Array<Int>>
+//    private lateinit var mMyAttacksPositionsFromPreviousRound: Array<Array<Int>>
+//    private lateinit var mMyShipsPositionsFromPreviousRound: Array<Array<Int>>
+
+    private lateinit var gameActivityViewModel: GameActivityViewModel
 
     private var mReceivedAttackThroughBt = ""
     private var mCoordinatesToSend = ""
@@ -55,30 +62,35 @@ class GameActivity : AppCompatActivity() {
         setContentView(R.layout.activity_game)
         BluetoothService.clearReceivedMessage()
 
+        gameActivityViewModel = ViewModelProvider(this)[GameActivityViewModel::class.java]
+
         //The following block is executed only one time at the start of the game,
         // in order to set everything up for the first turn
         //-----------------------------------------------------------------------------------------------------------------------
-        cvMyShips.setBoardState(transformStringToIntMatrix(intent.getStringExtra(PlaceShipsActivity.EXTRA_MY_SHIPS)))
-        mMyShipsPositionsFromPreviousRound =
-            transformStringToIntMatrix(intent.getStringExtra(PlaceShipsActivity.EXTRA_MY_SHIPS))
-        mMyAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
+        if (mIsStartOfTheGame) {
+            cvMyShips.setBoardState(transformStringToIntMatrix(intent.getStringExtra(PlaceShipsActivity.EXTRA_MY_SHIPS)))
+            gameActivityViewModel.myShipsPositionsFromPreviousRound.value =
+                transformStringToIntMatrix(intent.getStringExtra(PlaceShipsActivity.EXTRA_MY_SHIPS))
+            gameActivityViewModel.myAttacksPositionsFromPreviousRound.value = cvMyAttacks.getBoardState()
 
-        mOpponentShipsPositions =
-            transformStringToIntMatrix(intent.getStringExtra(PlaceShipsActivity.EXTRA_OPPONENT_SHIPS))
-        mOpponentAttackCoordinates = Array(INITIAL_ARRAY_SIZE) { INITIAL_ARRAY_VALUE }
+            mOpponentShipsPositions =
+                transformStringToIntMatrix(intent.getStringExtra(PlaceShipsActivity.EXTRA_OPPONENT_SHIPS))
+            mOpponentAttackCoordinates = Array(INITIAL_ARRAY_SIZE) { INITIAL_ARRAY_VALUE }
 
-        mIsPlayerOne = intent.getBooleanExtra(PlaceShipsActivity.EXTRA_IS_PLAYER_ONE, false)
-        Log.d(TAG, "I am player one = $mIsPlayerOne.")
-        buttonEndTurn.visibility = View.GONE
+            mIsPlayerOne = intent.getBooleanExtra(PlaceShipsActivity.EXTRA_IS_PLAYER_ONE, false)
+            Log.d(TAG, "I am player one = $mIsPlayerOne.")
+            buttonEndTurn.visibility = View.GONE
 
-        cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-        cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+            cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+            cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+            mIsStartOfTheGame = false
 
-        if (mIsPlayerOne) {
-            mIsMyTurn.value = true
-        } else {
-            mIsNotFirstTurn = true
-            mShouldWaitForOpponentAttack.value = mShouldWaitForOpponentAttack.value != true
+            if (mIsPlayerOne) {
+                mIsMyTurn.value = true
+            } else {
+                mIsNotFirstTurn = true
+                mShouldWaitForOpponentAttack.value = mShouldWaitForOpponentAttack.value != true
+            }
         }
         //-----------------------------------------------------------------------------------------------------------------------
 
@@ -94,11 +106,11 @@ class GameActivity : AppCompatActivity() {
                 if (mIsNotFirstTurn) {
                     val opponentAttackCoordinates = mOpponentAttackCoordinates
                     val updatedBoardState =
-                        updateMyShips(opponentAttackCoordinates, mMyShipsPositionsFromPreviousRound)
+                        updateMyShips(opponentAttackCoordinates, gameActivityViewModel.myShipsPositionsFromPreviousRound.value!!)
                     cvMyShips.setBoardState(updatedBoardState)
                     Log.d(TAG, "My ships updated with opponent attack.")
 
-                    mMyShipsPositionsFromPreviousRound = cvMyShips.getBoardState()
+                    gameActivityViewModel.myShipsPositionsFromPreviousRound.value = cvMyShips.getBoardState()
                     mIsEndgame = checkIfGameHasEnded(cvMyShips.getBoardState())
 
                     if (mIsEndgame) {
@@ -131,12 +143,12 @@ class GameActivity : AppCompatActivity() {
                 val updatedMyAttacksPositions =
                     updateMyAttacks(
                         myAttackCoordinates,
-                        mMyAttacksPositionsFromPreviousRound
+                        gameActivityViewModel.myAttacksPositionsFromPreviousRound.value!!
                     )
 
                 cvMyAttacks.setBoardState(updatedMyAttacksPositions)
                 Log.d(TAG, "My attacks updated after check for hit.")
-                mMyAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
+                gameActivityViewModel.myAttacksPositionsFromPreviousRound.value = cvMyAttacks.getBoardState()
 
                 mIsEndgame = checkIfGameHasEnded(cvMyAttacks.getBoardState())
 
@@ -174,6 +186,7 @@ class GameActivity : AppCompatActivity() {
         }
 
         mShouldWaitForOpponentAttack.observe(this, {
+            mIsWaitingForOpponentTurn = true
             lifecycleScope.launch(Dispatchers.Default) {
                 BluetoothService.clearReceivedMessage()
                 Log.d(TAG, "Waiting for opponent attack.")
@@ -186,13 +199,13 @@ class GameActivity : AppCompatActivity() {
                         for (i in mReceivedAttackThroughBt.indices) {
                             mOpponentAttackCoordinates[i] = mReceivedAttackThroughBt[i].digitToInt()
                         }
-
                         Log.d(TAG, "Opponent attack received.")
                         break
                     }
                 }
 
                 launch(Dispatchers.Main) {
+                    mIsWaitingForOpponentTurn = false
                     //When attack coordinates are received from the other player through BT,
                     //by switching the value of mIsMyTurn (it is observed), my next turn is started
                     mIsMyTurn.value = !mIsMyTurn.equals(true)
@@ -200,6 +213,39 @@ class GameActivity : AppCompatActivity() {
             }
         })
     }
+    override fun onRestart() {
+        super.onRestart()
+        Log.d(TAG, "Entered onRestart")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        executeOnStartIfWasOnPause()
+        Log.d(TAG, "Entered onStart")
+        Log.d(TAG, "Restored the state of the game - $mIsActivityPaused")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "Entered onResume")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        mIsActivityPaused = true
+        Log.d(TAG, "Entered onPause")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d(TAG, "Entered onStop")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "Entered onDestroy")
+    }
+
 
     private fun updateMyAttacks(
         myAttackCoordinates: Array<Int>,
@@ -283,5 +329,37 @@ class GameActivity : AppCompatActivity() {
             }
         }
         return outputMatrix
+    }
+
+    private fun executeOnStartIfWasOnPause() {
+        //Restore my Ships and my Attacks states as they were before the activity went onPause
+        restoreShipsAndAttacksBoardStates()
+
+        //Check whether the activity was paused in the middle of my turn
+        // or while waiting for opponent attack and restore the game state accordingly
+        if (mIsWaitingForOpponentTurn) {
+            cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+            cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+            buttonEndTurn.visibility = View.GONE
+            setLifecycleRelatedBooleansToFalse()
+
+            mShouldWaitForOpponentAttack.value =
+                mShouldWaitForOpponentAttack.value != true
+        } else {
+            //Reset to false the values of the booleans which give information
+                // in what state was the game before the activity went onPause
+            setLifecycleRelatedBooleansToFalse()
+            mIsMyTurn.value = !mIsMyTurn.equals(true)
+        }
+    }
+
+    private fun restoreShipsAndAttacksBoardStates() {
+        cvMyAttacks.setBoardState(gameActivityViewModel.myAttacksPositionsFromPreviousRound.value!!)
+        cvMyShips.setBoardState(gameActivityViewModel.myShipsPositionsFromPreviousRound.value!!)
+    }
+
+    private fun setLifecycleRelatedBooleansToFalse() {
+        mIsWaitingForOpponentTurn = false
+        mIsActivityPaused = false
     }
 }
