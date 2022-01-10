@@ -25,6 +25,9 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
 
     private val mDetector = GestureDetectorCompat(this.context, this)
 
+    /**
+     * Gesture detector override functions
+     */
     override fun onDown(e: MotionEvent?): Boolean {
         // Set
         var value = false
@@ -97,6 +100,10 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
         return false
     }
 
+    /**
+     * View override functions
+     */
+    // May be better to override onMeasure() here?!
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         // Cell height is equal to cell width for cells to be square
         mCellWidth = (w.toFloat() / mBoardSize)
@@ -202,6 +209,10 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
             }
     }
 
+
+    /**
+     * My functions
+     */
     fun finishEditing(){
         // Set the board state according to where the ships are placed
         for(ship in mShips) {
@@ -222,9 +233,8 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
         }
     }
 
-    /**
-     * Takes a ship and changes it's hasValidPosition
-     */
+
+    // Takes a ship and changes it's hasValidPosition
     private fun evaluatePos(ship: Ship){
         // If ship is outside of the board it has invalid position
         ship.hasInvalidPos = !mBoardRect.contains(ship.rect)
