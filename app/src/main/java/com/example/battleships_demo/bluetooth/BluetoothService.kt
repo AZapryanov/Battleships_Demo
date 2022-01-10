@@ -7,8 +7,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.example.battleships_demo.ConnectActivity
-import com.example.battleships_demo.PlaceShipsActivity
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
