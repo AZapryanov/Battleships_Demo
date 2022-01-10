@@ -1,4 +1,4 @@
-package com.example.battleships_demo.bluetooth
+package com.example.battleships_demo.activities
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice

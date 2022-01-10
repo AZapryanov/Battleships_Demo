@@ -16,7 +16,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.bluetooth.Constants
-import com.example.battleships_demo.bluetooth.DeviceListActivity
 
 class ConnectActivity : AppCompatActivity() {
 

@@ -17,7 +17,7 @@
             android:name=".activities.PlaceShipsActivity"
             android:exported="false" />
         <activity
-            android:name=".bluetooth.DeviceListActivity"
+            android:name=".activities.DeviceListActivity"
             android:exported="false"/>
         <activity
             android:name=".activities.ConnectActivity"
