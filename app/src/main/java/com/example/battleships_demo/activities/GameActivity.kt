@@ -67,10 +67,17 @@ class GameActivity : AppCompatActivity() {
         // in order to set everything up for the first turn
         //-----------------------------------------------------------------------------------------------------------------------
         if (mIsStartOfTheGame) {
-            cvMyShips.setBoardState(transformStringToIntMatrix(intent.getStringExtra(PlaceShipsActivity.EXTRA_MY_SHIPS)))
+            cvMyShips.setBoardState(
+                transformStringToIntMatrix(
+                    intent.getStringExtra(
+                        PlaceShipsActivity.EXTRA_MY_SHIPS
+                    )
+                )
+            )
             gameActivityViewModel.myShipsPositionsFromPreviousRound.value =
                 transformStringToIntMatrix(intent.getStringExtra(PlaceShipsActivity.EXTRA_MY_SHIPS))
-            gameActivityViewModel.myAttacksPositionsFromPreviousRound.value = cvMyAttacks.getBoardState()
+            gameActivityViewModel.myAttacksPositionsFromPreviousRound.value =
+                cvMyAttacks.getBoardState()
 
             mOpponentShipsPositions =
                 transformStringToIntMatrix(intent.getStringExtra(PlaceShipsActivity.EXTRA_OPPONENT_SHIPS))
@@ -107,11 +114,15 @@ class GameActivity : AppCompatActivity() {
                 if (mIsNotFirstTurn) {
                     val opponentAttackCoordinates = mOpponentAttackCoordinates
                     val updatedBoardState =
-                        updateMyShips(opponentAttackCoordinates, gameActivityViewModel.myShipsPositionsFromPreviousRound.value!!)
+                        updateMyShips(
+                            opponentAttackCoordinates,
+                            gameActivityViewModel.myShipsPositionsFromPreviousRound.value!!
+                        )
                     cvMyShips.setBoardState(updatedBoardState)
                     Log.d(TAG, "My ships updated with opponent attack.")
 
-                    gameActivityViewModel.myShipsPositionsFromPreviousRound.value = cvMyShips.getBoardState()
+                    gameActivityViewModel.myShipsPositionsFromPreviousRound.value =
+                        cvMyShips.getBoardState()
                     mIsEndgame = checkIfGameHasEnded(cvMyShips.getBoardState())
 
                     if (mIsEndgame) {
@@ -149,7 +160,8 @@ class GameActivity : AppCompatActivity() {
 
                 cvMyAttacks.setBoardState(updatedMyAttacksPositions)
                 Log.d(TAG, "My attacks updated after check for hit.")
-                gameActivityViewModel.myAttacksPositionsFromPreviousRound.value = cvMyAttacks.getBoardState()
+                gameActivityViewModel.myAttacksPositionsFromPreviousRound.value =
+                    cvMyAttacks.getBoardState()
 
                 mIsEndgame = checkIfGameHasEnded(cvMyAttacks.getBoardState())
 
@@ -213,6 +225,7 @@ class GameActivity : AppCompatActivity() {
             }
         })
     }
+
     override fun onRestart() {
         super.onRestart()
         Log.d(TAG, "Entered onRestart")
@@ -275,6 +288,7 @@ class GameActivity : AppCompatActivity() {
             if (opponentAttackCoordinates[i] == INITIAL_ARRAY_VALUE) {
                 break
             }
+
             val opponentAttackX = opponentAttackCoordinates[i]
             val opponentAttackY = opponentAttackCoordinates[i + 1]
 
@@ -316,9 +330,11 @@ class GameActivity : AppCompatActivity() {
         buttonEndTurn.visibility = View.GONE
         //----------------------------------------------
 
+        //Show appropriate pop-up message and toast for Winner or Defeated
+        showWinnerOrDefeatedImage(messageToShow)
+
         //The remaining enemy ships are shown if game is lost
         cvMyAttacks.visualizeRemainingOpponentShips(mOpponentShipsPositions)
-        Toast.makeText(this, messageToShow, Toast.LENGTH_LONG).show()
     }
 
     private fun transformStringToIntMatrix(inputString: String?): Array<Array<Int>> {
@@ -348,7 +364,7 @@ class GameActivity : AppCompatActivity() {
             startWaitingForOpponentAttack()
         } else {
             //Reset to false the values of the booleans which give information
-                // in what state was the game before the activity went onPause
+            // in what state was the game before the activity went onPause
             setLifecycleRelatedBooleansToFalse()
             startNextTurn()
         }
@@ -365,16 +381,29 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun startNextTurn() = if (mShouldStartMyNextTurn.value == SWAPPABLE_ONE
-        || mShouldStartMyNextTurn.value == null) {
+        || mShouldStartMyNextTurn.value == null
+    ) {
         mShouldStartMyNextTurn.value = SWAPPABLE_TWO
     } else {
         mShouldStartMyNextTurn.value = SWAPPABLE_ONE
     }
 
-    private fun startWaitingForOpponentAttack() = if (mShouldWaitForOpponentAttack.value == SWAPPABLE_ONE
-        || mShouldWaitForOpponentAttack.value == null) {
-        mShouldWaitForOpponentAttack.value = SWAPPABLE_TWO
-    } else {
-        mShouldWaitForOpponentAttack.value = SWAPPABLE_ONE
+    private fun startWaitingForOpponentAttack() =
+        if (mShouldWaitForOpponentAttack.value == SWAPPABLE_ONE
+            || mShouldWaitForOpponentAttack.value == null
+        ) {
+            mShouldWaitForOpponentAttack.value = SWAPPABLE_TWO
+        } else {
+            mShouldWaitForOpponentAttack.value = SWAPPABLE_ONE
+        }
+
+    private fun showWinnerOrDefeatedImage(messageToShow: String) {
+        if (messageToShow == WINNER_MESSAGE) {
+            ivWinner.visibility = View.VISIBLE
+
+        } else if (messageToShow == DEFEATED_MESSAGE) {
+            ivDefeated.visibility = View.VISIBLE
+        }
+        Toast.makeText(this, messageToShow, Toast.LENGTH_LONG).show()
     }
 }
