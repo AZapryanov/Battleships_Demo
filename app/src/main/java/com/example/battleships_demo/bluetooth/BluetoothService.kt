@@ -11,6 +11,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.*
+import kotlin.random.Random
 
 object BluetoothService {
 
@@ -32,8 +33,7 @@ object BluetoothService {
 
     // Member fields
     private var mAdapter: BluetoothAdapter? = null
-    private var mHandler: Handler? = null
-    private var mListener: BtListener? = null
+    private var mListeners = ArrayList<BtListener>()
     private var mSecureAcceptThread: AcceptThread? = null
     private var mInsecureAcceptThread: AcceptThread? = null
     private var mConnectThread: ConnectThread? = null
@@ -41,31 +41,52 @@ object BluetoothService {
     private var mState = 0
     private var mNewState = 0
 
+    // This is dumb I'll fix it
+    private var mP1Determined = false
+    private var isPlayer1 = false
+    var deleteThis = 0
+
     var mReceivedMessage = ""
     var mMyBoard: String? = null
     var mEnemyBoard: String? = null
 
     interface BtListener {
-        fun onAccept()
-        fun onConnect()
-        fun onConnected()
-        fun onWrite(bytes: ByteArray?)
-        fun onRead(bytes: ByteArray?)
+        fun onReceiveMessage(messageType: Int, message: Any?)
+    }
+
+    fun register(listener: BtListener){
+        mListeners.add(listener)
+    }
+
+    fun unregister(listener: BtListener){
+        mListeners.remove(listener)
+    }
+
+    private fun sendMessage(messageType: Int, message: Any?){
+        for(listener in mListeners){
+            listener.onReceiveMessage(messageType, message)
+        }
     }
 
     fun clearReceivedMessage() {
         mReceivedMessage = ""
     }
 
+    fun determinePlayer1(): Boolean {
+        if (mP1Determined){
+            return !isPlayer1
+        } else {
+            isPlayer1 = Random.nextInt(1, 100) > 50
+            return isPlayer1
+        }
+    }
+
     // Acts as constructor. Prepares a new Bluetooth session.
-    fun init(context: Context, //handler: Handler,
-             listener: BtListener){
+    fun init(context: Context){
         val manager = context.getSystemService(AppCompatActivity.BLUETOOTH_SERVICE) as BluetoothManager
         mAdapter = manager.adapter
         mState = STATE_NONE
         mNewState = mState
-        //mHandler = handler
-        mListener = listener
     }
 
     /**
@@ -177,13 +198,6 @@ object BluetoothService {
         mConnectedThread = ConnectedThread(socket, socketType)
         mConnectedThread!!.start()
 
-        // Send the connected device back to the UI Activity
-        val msg = mHandler!!.obtainMessage(Constants.MESSAGE_DEVICE)
-        val bundle = Bundle()
-        bundle.putString(Constants.DEVICE_NAME, device.name)
-        msg.data = bundle
-        mHandler!!.sendMessage(msg)
-
         notifyStateChange()
     }
 
@@ -232,11 +246,7 @@ object BluetoothService {
      */
     private fun connectionFailed() {
         // Send a failure message back to the Activity
-        val msg = mHandler!!.obtainMessage(Constants.MESSAGE_TOAST)
-        val bundle = Bundle()
-        bundle.putString(Constants.TOAST, "Unable to connect device")
-        msg.data = bundle
-        mHandler!!.sendMessage(msg)
+        sendMessage(Constants.MESSAGE_TOAST, "Unable to connect to device")
         mState = STATE_NONE
 
         notifyStateChange()
@@ -250,11 +260,7 @@ object BluetoothService {
      */
     private fun connectionLost() {
         // Send a failure message back to the Activity
-        val msg = mHandler!!.obtainMessage(Constants.MESSAGE_TOAST)
-        val bundle = Bundle()
-        bundle.putString(Constants.TOAST, "Device connection was lost")
-        msg.data = bundle
-        mHandler!!.sendMessage(msg)
+        sendMessage(Constants.MESSAGE_TOAST, "Device connection was lost")
         mState = STATE_NONE
 
         notifyStateChange()
@@ -294,6 +300,8 @@ object BluetoothService {
             }
             mmServerSocket = tmp
             mState = STATE_LISTEN
+
+            sendMessage(Constants.MESSAGE_LISTENING, null)
         }
 
         override fun run() {
@@ -311,14 +319,12 @@ object BluetoothService {
                     // successful connection or an exception
                     mmServerSocket!!.accept()
                 } catch (e: IOException) {
-                    Log.e(TAG, "Socket Type: " + mSocketType + "accept() failed", e)
+                    Log.e(TAG, "Socket Type: $mSocketType accept() failed", e)
                     break
                 }
 
                 // If a connection was accepted
                 if (socket != null) {
-                    mListener!!.onAccept()
-
                     synchronized(BluetoothService) {
                         when (mState) {
                             STATE_LISTEN, STATE_CONNECTING ->
@@ -383,13 +389,13 @@ object BluetoothService {
             }
             mmSocket = tmp
             mState = STATE_CONNECTING
+
+            sendMessage(Constants.MESSAGE_CONNECT, mmDevice)
         }
 
         override fun run() {
             Log.i(TAG, "BEGIN mConnectThread SocketType:$mSocketType")
             name = "ConnectThread$mSocketType"
-
-            mHandler!!.obtainMessage(Constants.MESSAGE_FIRST_PLAYER, 1, -1).sendToTarget()
 
             // Always cancel discovery because it will slow down a connection
             mAdapter?.cancelDiscovery()
@@ -414,8 +420,6 @@ object BluetoothService {
 
             // Reset the ConnectThread because we're done
             synchronized(BluetoothService) { mConnectThread = null }
-
-            mListener!!.onConnect()
 
             // Start the connected thread
             connected(mmSocket, mmDevice, mSocketType)
@@ -456,24 +460,25 @@ object BluetoothService {
             mmOutStream = tmpOut
             mState = STATE_CONNECTED
 
-            mListener!!.onConnected()
+            // Send the connected device back to the UI Activity
+            sendMessage(Constants.MESSAGE_CONNECTED, null)
         }
 
         override fun run() {
             Log.i(TAG, "BEGIN mConnectedThread")
             val buffer = ByteArray(1024)
-            var bytes: Int
+            var bytesCnt: Int
 
             // Keep listening to the InputStream while connected
             while (mState == STATE_CONNECTED) {
                 try {
                     // Read from the InputStream
-                    bytes = mmInStream!!.read(buffer)
+                    bytesCnt = mmInStream!!.read(buffer)
 
-                    // Send the obtained bytes
-//                    mHandler?.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer)
-//                        ?.sendToTarget()
-                    mListener!!.onRead(buffer)
+                    val bundle = Bundle()
+                    bundle.putInt(Constants.BYTE_COUNT, bytesCnt)
+                    bundle.putByteArray(Constants.BYTES, buffer)
+                    sendMessage(Constants.MESSAGE_READ, bundle)
                 } catch (e: IOException) {
                     Log.e(TAG, "disconnected", e)
                     connectionLost()
@@ -487,10 +492,7 @@ object BluetoothService {
             try {
                 mmOutStream!!.write(buffer)
 
-                // Share the sent message back to the UI Activity
-//                mHandler?.obtainMessage(Constants.MESSAGE_WRITE, -1, -1, buffer)
-//                    ?.sendToTarget()
-                mListener!!.onWrite(buffer)
+                sendMessage(Constants.MESSAGE_WRITE, buffer)
             } catch (e: IOException) {
                 Log.e(TAG, "Exception during write", e)
             }
