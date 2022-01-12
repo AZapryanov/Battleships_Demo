@@ -8,7 +8,7 @@
     tools:context=".activities.ConnectActivity">
 
     <TextView
-        android:id="@+id/text_device_name"
+        android:id="@+id/text_status"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:textColor="@color/white"
