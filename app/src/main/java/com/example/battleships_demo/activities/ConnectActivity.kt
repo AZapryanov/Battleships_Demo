@@ -1,6 +1,7 @@
 package com.example.battleships_demo.activities
 
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
@@ -16,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.bluetooth.Constants
+import kotlin.random.Random
 
 class ConnectActivity : AppCompatActivity(), BluetoothService.BtListener {
 
@@ -23,11 +25,7 @@ class ConnectActivity : AppCompatActivity(), BluetoothService.BtListener {
     private var mOutStringBuffer: StringBuffer? = null
     private var mBluetoothAdapter: BluetoothAdapter? = null
 
-    // The person who initiates a connection gets this variable set to 1
-    // which makes him player 1
-    private var mPlayerNum = 2
-
-    private lateinit var mTextName: TextView
+    private lateinit var mStatusText: TextView
 
     companion object {
         private const val TAG = "ConnectActivity"
@@ -38,8 +36,12 @@ class ConnectActivity : AppCompatActivity(), BluetoothService.BtListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_connect)
+        BluetoothService.deleteThis++
 
-        mTextName = findViewById(R.id.text_device_name)
+        mStatusText = findViewById(R.id.text_status)
+        // Initialize the BluetoothChatService to perform bluetooth connections
+        BluetoothService.init(this)
+        BluetoothService.register(this)  // Register as listener for incoming messages
 
         // This is a higher order function that runs a callback after we set the result
         // from DeviceListActivity and finish() it
@@ -74,101 +76,32 @@ class ConnectActivity : AppCompatActivity(), BluetoothService.BtListener {
                 REQUEST_ENABLE_BT
             )
         }
-        // Initialize the BluetoothChatService to perform bluetooth connections
-        BluetoothService.init(this, this)
+
         // Initialize the buffer for outgoing messages
         mOutStringBuffer = StringBuffer()
 
         BluetoothService.start()
     }
 
-    override fun onAccept() {
-        TODO("Not yet implemented")
+    override fun onDestroy() {
+        super.onDestroy()
+        BluetoothService.unregister(this)
     }
 
-    override fun onConnect() {
-        TODO("Not yet implemented")
-    }
-
-    override fun onConnected() {
-        TODO("Not yet implemented")
-    }
-
-    override fun onRead(bytes: ByteArray?) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onWrite(bytes: ByteArray?) {
-        TODO("Not yet implemented")
-    }
-
-    /**
-     *  Init private variable handler
-     */
-    private val mHandler = Handler(Looper.getMainLooper()) { msg ->
-        when (msg.what) {
-            Constants.MESSAGE_STATE_CHANGE ->
-                // I pass mState as arg1 in BluetoothService
-                when (msg.arg1) {
-                BluetoothService.STATE_CONNECTED -> {
-                    setStatus("Connected to $mConnectedDeviceName")
-                    val intent = Intent(this, PlaceShipsActivity::class.java)
-                    intent.putExtra(EXTRA_PLAYER_NUMBER, mPlayerNum)
-                    startActivity(intent)
-                    true
-                }
-                BluetoothService.STATE_CONNECTING -> {
-                    setStatus("Connecting...")
-                    true
-                }
-                BluetoothService.STATE_LISTEN,
-                BluetoothService.STATE_NONE -> {
-                    setStatus("Not connected")
-                    true
-                }
-                else -> false
-            }
-            Constants.MESSAGE_FIRST_PLAYER -> {
-                mPlayerNum = msg.arg1
-                true
-            }
-            Constants.MESSAGE_WRITE -> {
-                val writeBuf = msg.obj as ByteArray
-                // construct a string from the buffer
-                val writeMessage = String(writeBuf)
-
-                BluetoothService.mMyBoard = writeMessage
-                true
-            }
-            Constants.MESSAGE_READ -> {
-                val readBuf = msg.obj as ByteArray
-                // construct a string from the valid bytes in the buffer
-                val readMessage = String(readBuf, 0, msg.arg1)
-
-                Log.d(TAG, "reading message: $readMessage")
-
-                PlaceShipsActivity.otherPlayerReady = true
-
-                // This gets single coordinates from an attack
-                BluetoothService.mReceivedMessage = readMessage
-                // This is used once for transferring initial boards
-                BluetoothService.mEnemyBoard = readMessage
-                true
-            }
-            Constants.MESSAGE_DEVICE -> {
-                // save the connected device's name
-                mConnectedDeviceName = msg.data.getString(Constants.DEVICE_NAME)
-                Toast.makeText(
-                    this, "Connected to $mConnectedDeviceName", Toast.LENGTH_SHORT
-                ).show()
-                true
+    override fun onReceiveMessage(messageType: Int, message: Any?) {
+        when(messageType){
+            Constants.MESSAGE_LISTENING -> { runOnUiThread { setStatus("Listening for connections..") } }
+            Constants.MESSAGE_CONNECT -> { runOnUiThread { setStatus("Connecting..") } }
+            Constants.MESSAGE_CONNECTED -> {
+                runOnUiThread { setStatus("Connected to $mConnectedDeviceName") }
+                BluetoothService.unregister(this)  // Stop listening for messages
+                startActivity(Intent(this, PlaceShipsActivity::class.java))
             }
             Constants.MESSAGE_TOAST -> {
-                Toast.makeText(
-                    this, msg.data.getString(Constants.TOAST), Toast.LENGTH_SHORT).show()
-                true
+                runOnUiThread {
+                    Toast.makeText(this, (message as String), Toast.LENGTH_SHORT).show()
+                }
             }
-            else -> false
         }
     }
 
@@ -184,6 +117,7 @@ class ConnectActivity : AppCompatActivity(), BluetoothService.BtListener {
     }
 
     private fun setStatus(str: String){
-        mTextName.text = str
+        Log.d(TAG, "setStatus: changing status at $this")
+        mStatusText.text = str
     }
 }
