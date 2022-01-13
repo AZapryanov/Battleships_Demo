@@ -98,23 +98,6 @@ class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
 
         intent.putExtra(EXTRA_OPPONENT_SHIPS, mEnemyBoard)
 
-        var boardStr = ""
-        mMyBoard.forEach { row ->
-            row.forEach { num ->
-                boardStr += num.toString()
-            }
-            boardStr += "\n"
-        }
-        Log.d(TAG, "startGameActivity: own board\n$boardStr")
-        boardStr = ""
-        mEnemyBoard?.forEach { row ->
-            row.forEach { num ->
-                boardStr += num.toString()
-            }
-            boardStr += "\n"
-        }
-        Log.d(TAG, "startGameActivity: enemy board\n$boardStr")
-
         BluetoothService.unregister(this)
         startActivity(intent)
     }
