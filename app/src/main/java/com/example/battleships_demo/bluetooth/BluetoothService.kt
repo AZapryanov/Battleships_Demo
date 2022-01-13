@@ -4,7 +4,6 @@ package com.example.battleships_demo.bluetooth
 import android.bluetooth.*
 import android.content.Context
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import java.io.IOException
@@ -50,7 +49,7 @@ object BluetoothService {
     var mEnemyBoard: String? = null
 
     interface BtListener {
-        fun onReceiveMessage(messageType: Int, message: Any?)
+        fun onReceiveEvent(eventType: Int, message: Any?)
     }
 
     fun register(listener: BtListener){
@@ -61,9 +60,9 @@ object BluetoothService {
         mListeners.remove(listener)
     }
 
-    private fun sendMessage(messageType: Int, message: Any?){
+    private fun sendMessage(eventType: Int, message: Any?){
         for(listener in mListeners){
-            listener.onReceiveMessage(messageType, message)
+            listener.onReceiveEvent(eventType, message)
         }
     }
 
@@ -138,7 +137,7 @@ object BluetoothService {
             mInsecureAcceptThread!!.start()
         }
 
-        sendMessage(Constants.MESSAGE_LISTENING, null)
+        sendMessage(BtEvents.EVENT_LISTENING, null)
         notifyStateChange()
     }
 
@@ -199,8 +198,8 @@ object BluetoothService {
         mConnectedThread = ConnectedThread(socket, socketType)
         mConnectedThread!!.start()
 
-        sendMessage(Constants.MESSAGE_CONNECTED, device)
-        sendMessage(Constants.MESSAGE_TOAST, "Connected to ${device.name}")
+        sendMessage(BtEvents.EVENT_CONNECTED, device)
+        sendMessage(BtEvents.EVENT_TOAST, "Connected to ${device.name}")
 
         notifyStateChange()
     }
@@ -244,13 +243,24 @@ object BluetoothService {
         // Perform the write unsynchronized
         r!!.write(out)
     }
+    fun writeInt(out: Int) {
+        // Create temporary object
+        var r: ConnectedThread?
+        // Synchronize a copy of the ConnectedThread
+        synchronized(this) {
+            if (mState != STATE_CONNECTED) return
+            r = mConnectedThread
+        }
+        // Perform the write unsynchronized
+        r!!.writeInt(out)
+    }
 
     /**
      * Indicate that the connection attempt failed and notify the UI Activity.
      */
     private fun connectionFailed() {
         // Send a failure message back to the Activity
-        sendMessage(Constants.MESSAGE_TOAST, "Unable to connect to device")
+        sendMessage(BtEvents.EVENT_TOAST, "Unable to connect to device")
         mState = STATE_NONE
 
         notifyStateChange()
@@ -264,7 +274,7 @@ object BluetoothService {
      */
     private fun connectionLost() {
         // Send a failure message back to the Activity
-        sendMessage(Constants.MESSAGE_TOAST, "Device connection was lost")
+        sendMessage(BtEvents.EVENT_TOAST, "Device connection was lost")
         mState = STATE_NONE
 
         notifyStateChange()
@@ -392,7 +402,7 @@ object BluetoothService {
             mmSocket = tmp
             mState = STATE_CONNECTING
 
-            sendMessage(Constants.MESSAGE_CONNECT, mmDevice)
+            sendMessage(BtEvents.EVENT_CONNECT, mmDevice)
         }
 
         override fun run() {
@@ -475,9 +485,9 @@ object BluetoothService {
                     bytesCnt = mmInStream!!.read(buffer)
 
                     val bundle = Bundle()
-                    bundle.putInt(Constants.BYTE_COUNT, bytesCnt)
-                    bundle.putByteArray(Constants.BYTES, buffer)
-                    sendMessage(Constants.MESSAGE_READ, bundle)
+                    bundle.putInt(BtEvents.BYTE_COUNT, bytesCnt)
+                    bundle.putByteArray(BtEvents.BYTES, buffer)
+                    sendMessage(BtEvents.EVENT_READ, bundle)
                 } catch (e: IOException) {
                     Log.e(TAG, "disconnected", e)
                     connectionLost()
@@ -491,7 +501,16 @@ object BluetoothService {
             try {
                 mmOutStream!!.write(buffer)
 
-                sendMessage(Constants.MESSAGE_WRITE, buffer)
+                sendMessage(BtEvents.EVENT_WRITE, buffer)
+            } catch (e: IOException) {
+                Log.e(TAG, "Exception during write", e)
+            }
+        }
+        fun writeInt(int: Int) {
+            try {
+                mmOutStream!!.write(int)
+
+                sendMessage(BtEvents.EVENT_WRITE, int)
             } catch (e: IOException) {
                 Log.e(TAG, "Exception during write", e)
             }

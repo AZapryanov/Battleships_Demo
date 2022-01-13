@@ -5,10 +5,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
-import android.widget.Toast
 import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
-import com.example.battleships_demo.bluetooth.Constants
+import com.example.battleships_demo.bluetooth.BtEvents
 import com.example.battleships_demo.customviews.EditableBoard
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,14 +22,14 @@ class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
         const val EXTRA_MY_SHIPS = "myShips"
         const val EXTRA_OPPONENT_SHIPS = "enemyShips"
         const val EXTRA_IS_PLAYER_ONE = "isPlayerOneOrTwo"
-
-        var otherPlayerReady = false
     }
 
     private lateinit var mBoard: EditableBoard
+    private var otherPlayerReady = false
     private var mHasClickedReady = false
     private lateinit var mMyBoard: Array<Array<Int>>
     private var mEnemyBoard: Array<Array<Int>>? = null
+    private var mIsPlayer1 = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,17 +67,20 @@ class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
         }
     }
 
-    override fun onReceiveMessage(messageType: Int, message: Any?) {
-        when(messageType){
-            Constants.MESSAGE_LISTENING -> {
+    override fun onReceiveEvent(eventType: Int, message: Any?) {
+        when(eventType){
+            BtEvents.EVENT_LISTENING -> {
                 BluetoothService.unregister(this)
                 finish()
             }
-            Constants.MESSAGE_WRITE -> {
+            BtEvents.EVENT_WRITE -> {
                 Log.d(TAG, "onReceiveMessage: sending board to the enemy")
+                if(!otherPlayerReady){
+                    mIsPlayer1 = true
+                }
             }
-            Constants.MESSAGE_READ -> {
-                val bytes = (message as Bundle).getByteArray(Constants.BYTES) ?: return
+            BtEvents.EVENT_READ -> {
+                val bytes = (message as Bundle).getByteArray(BtEvents.BYTES) ?: return
                 mEnemyBoard = bytesToSquareGrid(bytes, 10)
                 otherPlayerReady = true
             }
@@ -90,8 +92,7 @@ class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
 
         val intent = Intent(this, GameActivity::class.java)
         intent.putExtra(EXTRA_MY_SHIPS, mMyBoard)
-        val isPlayer1 = BluetoothService.determinePlayer1()
-        intent.putExtra(EXTRA_IS_PLAYER_ONE, isPlayer1)
+        intent.putExtra(EXTRA_IS_PLAYER_ONE, mIsPlayer1)
 
         waitForPlayer()
 

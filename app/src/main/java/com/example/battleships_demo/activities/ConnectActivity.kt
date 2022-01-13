@@ -7,8 +7,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
@@ -16,8 +14,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
-import com.example.battleships_demo.bluetooth.Constants
-import kotlin.random.Random
+import com.example.battleships_demo.bluetooth.BtEvents
 
 class ConnectActivity : AppCompatActivity(), BluetoothService.BtListener {
 
@@ -86,17 +83,17 @@ class ConnectActivity : AppCompatActivity(), BluetoothService.BtListener {
         BluetoothService.unregister(this)
     }
 
-    override fun onReceiveMessage(messageType: Int, message: Any?) {
-        when(messageType){
-            Constants.MESSAGE_LISTENING -> { setStatus("Listening for connections..") }
-            Constants.MESSAGE_CONNECT -> { setStatus("Connecting..") }
-            Constants.MESSAGE_CONNECTED -> {
+    override fun onReceiveEvent(eventType: Int, message: Any?) {
+        when(eventType){
+            BtEvents.EVENT_LISTENING -> { setStatus("Listening for connections..") }
+            BtEvents.EVENT_CONNECT -> { setStatus("Connecting..") }
+            BtEvents.EVENT_CONNECTED -> {
                 runOnUiThread {
                     setStatus("Connected to ${(message as BluetoothDevice).name}")
                 }
                 startActivity(Intent(this, PlaceShipsActivity::class.java))
             }
-            Constants.MESSAGE_TOAST -> {
+            BtEvents.EVENT_TOAST -> {
                 runOnUiThread {
                     Toast.makeText(this, (message as String), Toast.LENGTH_SHORT).show()
                 }
