@@ -221,13 +221,13 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
                     // Convert ship coords to board coords
                     val xInBoardSpace = (ship.rect.left / mCellWidth).toInt() + i
                     val yInBoardSpace = (ship.rect.top / mCellHeight).toInt()
-                    mBoardState[xInBoardSpace][yInBoardSpace] = 1
+                    mBoardState[yInBoardSpace][xInBoardSpace] = 1
                 }
             } else {
                 for (i in 0 until ship.size) {
                     val xInBoardSpace = (ship.rect.left / mCellWidth).toInt()
                     val yInBoardSpace = (ship.rect.top / mCellHeight).toInt() + i
-                    mBoardState[xInBoardSpace][yInBoardSpace] = 1
+                    mBoardState[yInBoardSpace][xInBoardSpace] = 1
                 }
             }
         }
