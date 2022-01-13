@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.Toast
 import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.bluetooth.Constants
@@ -69,13 +70,16 @@ class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
 
     override fun onReceiveMessage(messageType: Int, message: Any?) {
         when(messageType){
+            Constants.MESSAGE_LISTENING -> {
+                BluetoothService.unregister(this)
+                finish()
+            }
             Constants.MESSAGE_WRITE -> {
                 Log.d(TAG, "onReceiveMessage: sending board to the enemy")
             }
             Constants.MESSAGE_READ -> {
                 val bytes = (message as Bundle).getByteArray(Constants.BYTES) ?: return
-                val bytesCnt = message.getInt(Constants.BYTE_COUNT)
-                mEnemyBoard = bytesToSquareGrid(bytes, bytesCnt, 10)
+                mEnemyBoard = bytesToSquareGrid(bytes, 10)
                 otherPlayerReady = true
             }
         }
@@ -104,7 +108,7 @@ class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
         }
     }
 
-    private fun bytesToSquareGrid(bytes: ByteArray, length: Int, gridSize: Int): Array<Array<Int>>?{
+    private fun bytesToSquareGrid(bytes: ByteArray, gridSize: Int): Array<Array<Int>>?{
         if (gridSize * gridSize > bytes.size) {
             Log.d(TAG, "bytesToGrid: cant turn byteArray of size ${bytes.size} into a ${gridSize}x$gridSize grid")
             return null
@@ -114,7 +118,7 @@ class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
 
         val grid = Array(gridSize) { Array(gridSize) {0} }
         bytes.forEachIndexed { index, byte ->
-            if (index >= length) return@forEachIndexed
+            if (index >= 100) return@forEachIndexed
             grid[index / 10][index % 10] = byte.toInt()
         }
 
