@@ -36,7 +36,6 @@ class ConnectActivity : AppCompatActivity(), BluetoothService.BtListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_connect)
-        BluetoothService.deleteThis++
 
         mStatusText = findViewById(R.id.text_status)
         // Initialize the BluetoothChatService to perform bluetooth connections
