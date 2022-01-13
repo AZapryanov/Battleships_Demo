@@ -61,7 +61,6 @@ object BluetoothService {
         mListeners.remove(listener)
     }
 
-    @Synchronized
     private fun sendMessage(messageType: Int, message: Any?){
         for(listener in mListeners){
             listener.onReceiveMessage(messageType, message)
@@ -72,6 +71,7 @@ object BluetoothService {
         mReceivedMessage = ""
     }
 
+    @Synchronized
     fun determinePlayer1(): Boolean {
         if (mP1Determined){
             return !isPlayer1
