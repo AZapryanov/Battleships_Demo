@@ -67,20 +67,12 @@ class GameActivity : AppCompatActivity() {
         // in order to set everything up for the first turn
         //-----------------------------------------------------------------------------------------------------------------------
         if (mIsStartOfTheGame) {
-            cvMyShips.setBoardState(
-                transformStringToIntMatrix(
-                    intent.getStringExtra(
-                        PlaceShipsActivity.EXTRA_MY_SHIPS
-                    )
-                )
-            )
-            gameActivityViewModel.myShipsPositionsFromPreviousRound.value =
-                transformStringToIntMatrix(intent.getStringExtra(PlaceShipsActivity.EXTRA_MY_SHIPS))
-            gameActivityViewModel.myAttacksPositionsFromPreviousRound.value =
-                cvMyAttacks.getBoardState()
+            cvMyShips.setBoardState(intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>)
 
-            mOpponentShipsPositions =
-                transformStringToIntMatrix(intent.getStringExtra(PlaceShipsActivity.EXTRA_OPPONENT_SHIPS))
+            gameActivityViewModel.myShipsPositionsFromPreviousRound.value = intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>?
+            gameActivityViewModel.myAttacksPositionsFromPreviousRound.value = cvMyAttacks.getBoardState()
+
+            mOpponentShipsPositions = intent.extras!!.get(PlaceShipsActivity.EXTRA_OPPONENT_SHIPS) as Array<Array<Int>>
             mOpponentAttackCoordinates = Array(INITIAL_ARRAY_SIZE) { INITIAL_ARRAY_VALUE }
 
             mIsPlayerOne = intent.getBooleanExtra(PlaceShipsActivity.EXTRA_IS_PLAYER_ONE, false)
