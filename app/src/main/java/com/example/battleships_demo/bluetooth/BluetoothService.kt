@@ -44,7 +44,6 @@ object BluetoothService {
     // This is dumb I'll fix it
     private var mP1Determined = false
     private var isPlayer1 = false
-    var deleteThis = 0
 
     var mReceivedMessage = ""
     var mMyBoard: String? = null

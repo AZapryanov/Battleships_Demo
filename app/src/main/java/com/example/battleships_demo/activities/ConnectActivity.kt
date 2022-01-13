@@ -30,13 +30,11 @@ class ConnectActivity : AppCompatActivity(), BluetoothService.BtListener {
     companion object {
         private const val TAG = "ConnectActivity"
         private const val REQUEST_ENABLE_BT = 1
-        const val EXTRA_PLAYER_NUMBER = "playerNumber"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_connect)
-        BluetoothService.deleteThis++
 
         mStatusText = findViewById(R.id.text_status)
         // Initialize the BluetoothChatService to perform bluetooth connections
