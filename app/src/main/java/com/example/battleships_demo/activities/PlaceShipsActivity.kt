@@ -5,15 +5,17 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.Toast
 import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
+import com.example.battleships_demo.bluetooth.Constants
 import com.example.battleships_demo.customviews.EditableBoard
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.coroutines.*
 
-class PlaceShipsActivity : AppCompatActivity() {
+class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
 
     companion object {
         private const val TAG = "PlaceShipsActivity"
@@ -25,18 +27,17 @@ class PlaceShipsActivity : AppCompatActivity() {
         var otherPlayerReady = false
     }
 
-    private var mPlayerNum: Int = 0
     private lateinit var mBoard: EditableBoard
     private var mHasClickedReady = false
-    private lateinit var mMyShipsAsString: String
+    private lateinit var mMyBoard: Array<Array<Int>>
+    private var mEnemyBoard: Array<Array<Int>>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_place_ships)
 
-        mPlayerNum = intent.getIntExtra(ConnectActivity.EXTRA_PLAYER_NUMBER, 0)
         mBoard = findViewById(R.id.editable_board)
-        Log.d(TAG, "onCreate: Player: $mPlayerNum")
+        BluetoothService.register(this)
 
         findViewById<Button>(R.id.btn_ready).setOnClickListener {
             if (mHasClickedReady){
@@ -47,10 +48,19 @@ class PlaceShipsActivity : AppCompatActivity() {
             Log.d(TAG, "onCreate: ${mBoard.getBoardState()}")
             
             mHasClickedReady = true
-            mMyShipsAsString = mBoard.getBoardStateAsString()!!
+            mMyBoard = mBoard.getBoardState()
 
+            val boardAsByteArray = ByteArray(1024)
+            mMyBoard.forEachIndexed { row, nums ->
+                nums.forEachIndexed { col, num ->
+                    // "row * nums.size + col" turns 2d coords into 1d indices
+                    // example: for 4x7 2d arr, coords [2, 4] would be 2*7+4 = 18
+                    boardAsByteArray[row * nums.size + col] = num.toByte()
+                }
+            }
+            Log.d(TAG, "onCreate: $boardAsByteArray")
             // Send your board to the other player
-            BluetoothService.write(mBoard.getBoardStateAsString()!!.toByteArray())
+            BluetoothService.write(boardAsByteArray)
 
             CoroutineScope(Dispatchers.IO).launch {
                 startGameActivity()
@@ -58,18 +68,36 @@ class PlaceShipsActivity : AppCompatActivity() {
         }
     }
 
+    override fun onReceiveMessage(messageType: Int, message: Any?) {
+        when(messageType){
+            Constants.MESSAGE_LISTENING -> {
+                BluetoothService.unregister(this)
+                finish()
+            }
+            Constants.MESSAGE_WRITE -> {
+                Log.d(TAG, "onReceiveMessage: sending board to the enemy")
+            }
+            Constants.MESSAGE_READ -> {
+                val bytes = (message as Bundle).getByteArray(Constants.BYTES) ?: return
+                mEnemyBoard = bytesToSquareGrid(bytes, 10)
+                otherPlayerReady = true
+            }
+        }
+    }
+
     private suspend fun startGameActivity(){
         Log.d(TAG, "startGameActivity():")
-        waitForPlayer()
 
         val intent = Intent(this, GameActivity::class.java)
-        intent.putExtra(EXTRA_MY_SHIPS, mMyShipsAsString)
-        intent.putExtra(EXTRA_OPPONENT_SHIPS, BluetoothService.mEnemyBoard)
-        when(mPlayerNum){
-            1 -> intent.putExtra(EXTRA_IS_PLAYER_ONE, true)
-            2 -> intent.putExtra(EXTRA_IS_PLAYER_ONE, false)
-        }
+        intent.putExtra(EXTRA_MY_SHIPS, mMyBoard)
+        val isPlayer1 = BluetoothService.determinePlayer1()
+        intent.putExtra(EXTRA_IS_PLAYER_ONE, isPlayer1)
 
+        waitForPlayer()
+
+        intent.putExtra(EXTRA_OPPONENT_SHIPS, mEnemyBoard)
+
+        BluetoothService.unregister(this)
         startActivity(intent)
     }
 
@@ -78,5 +106,22 @@ class PlaceShipsActivity : AppCompatActivity() {
         while(!otherPlayerReady){
             continue
         }
+    }
+
+    private fun bytesToSquareGrid(bytes: ByteArray, gridSize: Int): Array<Array<Int>>?{
+        if (gridSize * gridSize > bytes.size) {
+            Log.d(TAG, "bytesToGrid: cant turn byteArray of size ${bytes.size} into a ${gridSize}x$gridSize grid")
+            return null
+        } else if(gridSize >= 100){
+            return null
+        }
+
+        val grid = Array(gridSize) { Array(gridSize) {0} }
+        bytes.forEachIndexed { index, byte ->
+            if (index >= 100) return@forEachIndexed
+            grid[index / 10][index % 10] = byte.toInt()
+        }
+
+        return grid
     }
 }
