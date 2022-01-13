@@ -90,11 +90,12 @@ class ConnectActivity : AppCompatActivity(), BluetoothService.BtListener {
 
     override fun onReceiveMessage(messageType: Int, message: Any?) {
         when(messageType){
-            Constants.MESSAGE_LISTENING -> { runOnUiThread { setStatus("Listening for connections..") } }
-            Constants.MESSAGE_CONNECT -> { runOnUiThread { setStatus("Connecting..") } }
+            Constants.MESSAGE_LISTENING -> { setStatus("Listening for connections..") }
+            Constants.MESSAGE_CONNECT -> { setStatus("Connecting..") }
             Constants.MESSAGE_CONNECTED -> {
-                runOnUiThread { setStatus("Connected to $mConnectedDeviceName") }
-                BluetoothService.unregister(this)  // Stop listening for messages
+                runOnUiThread {
+                    setStatus("Connected to ${(message as BluetoothDevice).name}")
+                }
                 startActivity(Intent(this, PlaceShipsActivity::class.java))
             }
             Constants.MESSAGE_TOAST -> {
