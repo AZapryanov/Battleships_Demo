@@ -10,13 +10,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
+import com.example.battleships_demo.bluetooth.Constants
 import com.example.battleships_demo.customviews.InteractiveBoard
 import com.example.battleships_demo.viemodels.GameActivityViewModel
 import kotlinx.android.synthetic.main.activity_game.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class GameActivity : AppCompatActivity() {
+class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
 
     companion object {
         private const val TAG = "GameActivity"
@@ -55,6 +56,7 @@ class GameActivity : AppCompatActivity() {
 
     private var mReceivedAttackThroughBt = ""
     private var mCoordinatesToSend = ""
+    private var mReceivedBluetoothMessage = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +69,7 @@ class GameActivity : AppCompatActivity() {
         // in order to set everything up for the first turn
         //-----------------------------------------------------------------------------------------------------------------------
         if (mIsStartOfTheGame) {
+            BluetoothService.register(this)
             cvMyShips.setBoardState(intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>)
 
             gameActivityViewModel.myShipsPositionsFromPreviousRound.value = intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>?
@@ -197,8 +200,8 @@ class GameActivity : AppCompatActivity() {
 
                 //Waiting to receive opponent attack coordinates and to start my next turn
                 while (true) {
-                    mReceivedAttackThroughBt = BluetoothService.mReceivedMessage
-
+                    mReceivedAttackThroughBt = mReceivedBluetoothMessage
+                    Log.d(TAG, mReceivedAttackThroughBt)
                     if (mReceivedAttackThroughBt.length > 1) {
                         for (i in mReceivedAttackThroughBt.indices) {
                             mOpponentAttackCoordinates[i] = mReceivedAttackThroughBt[i].digitToInt()
@@ -397,5 +400,17 @@ class GameActivity : AppCompatActivity() {
             ivDefeated.visibility = View.VISIBLE
         }
         Toast.makeText(this, messageToShow, Toast.LENGTH_LONG).show()
+    }
+
+    override fun onReceiveMessage(messageType: Int, message: Any?) {
+        when(messageType){
+            Constants.MESSAGE_WRITE -> {
+                Log.d(TAG, "onReceiveMessage: sending attack to the enemy")
+            }
+            Constants.MESSAGE_READ -> {
+                val bytes = (message as Bundle).getByteArray(Constants.BYTES) ?: return
+                mReceivedBluetoothMessage = String(bytes)
+            }
+        }
     }
 }
