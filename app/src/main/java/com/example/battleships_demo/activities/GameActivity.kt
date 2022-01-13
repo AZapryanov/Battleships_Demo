@@ -253,6 +253,7 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
 
     override fun onDestroy() {
         super.onDestroy()
+        BluetoothService.unregister(this)
         Log.d(TAG, "Entered onDestroy")
     }
 
