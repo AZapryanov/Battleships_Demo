@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
-import com.example.battleships_demo.bluetooth.Constants
+import com.example.battleships_demo.bluetooth.BtEvents
 import com.example.battleships_demo.customviews.InteractiveBoard
 import com.example.battleships_demo.viemodels.GameActivityViewModel
 import kotlinx.android.synthetic.main.activity_game.*
@@ -72,10 +72,23 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
             BluetoothService.register(this)
             cvMyShips.setBoardState(intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>)
 
+            //Tests
+            //--------------------------------------------------------------------------------------------------
+            val myShipsFromIntent = intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>?
+            var stringMyShipsFromIntent = ""
+            for (i in myShipsFromIntent!!.indices) {
+                stringMyShipsFromIntent += myShipsFromIntent[i].toString()
+            }
+            Log.d(TAG, "My ships positions at the start of the game = $stringMyShipsFromIntent.")
+            //--------------------------------------------------------------------------------------------------
+
+
             gameActivityViewModel.myShipsPositionsFromPreviousRound.value = intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>?
             gameActivityViewModel.myAttacksPositionsFromPreviousRound.value = cvMyAttacks.getBoardState()
 
             mOpponentShipsPositions = intent.extras!!.get(PlaceShipsActivity.EXTRA_OPPONENT_SHIPS) as Array<Array<Int>>
+            Log.d(TAG, "Opponent ships positions at the start of the game = ${mOpponentShipsPositions.toString()}.")
+
             mOpponentAttackCoordinates = Array(INITIAL_ARRAY_SIZE) { INITIAL_ARRAY_VALUE }
 
             mIsPlayerOne = intent.getBooleanExtra(PlaceShipsActivity.EXTRA_IS_PLAYER_ONE, false)
@@ -115,6 +128,7 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
                         )
                     cvMyShips.setBoardState(updatedBoardState)
                     Log.d(TAG, "My ships updated with opponent attack.")
+                    mOpponentAttackCoordinates = Array(INITIAL_ARRAY_SIZE) { INITIAL_ARRAY_VALUE }
 
                     gameActivityViewModel.myShipsPositionsFromPreviousRound.value =
                         cvMyShips.getBoardState()
@@ -200,19 +214,26 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
 
                 //Waiting to receive opponent attack coordinates and to start my next turn
                 while (true) {
-                    mReceivedAttackThroughBt = mReceivedBluetoothMessage
-                    Log.d(TAG, mReceivedAttackThroughBt)
-                    if (mReceivedAttackThroughBt.length > 1) {
+                    if (mReceivedBluetoothMessage.length > 1) {
+                        for (i in mReceivedBluetoothMessage.indices) {
+                            if (mReceivedBluetoothMessage[i].code in 48..57) {
+                                mReceivedAttackThroughBt += mReceivedBluetoothMessage[i].digitToInt()
+                            }
+                        }
+                        Log.d(TAG, mReceivedAttackThroughBt)
+
                         for (i in mReceivedAttackThroughBt.indices) {
                             mOpponentAttackCoordinates[i] = mReceivedAttackThroughBt[i].digitToInt()
                         }
-                        Log.d(TAG, "Opponent attack received.")
+                        Log.d(TAG, "Opponent attack received. $mReceivedAttackThroughBt")
                         break
                     }
                 }
 
                 launch(Dispatchers.Main) {
                     mIsWaitingForOpponentTurn = false
+                    mReceivedBluetoothMessage = ""
+                    mReceivedAttackThroughBt = ""
                     //When attack coordinates are received from the other player through BT,
                     //by switching the value of mIsMyTurn (it is observed), my next turn is started
                     startNextTurn()
@@ -333,17 +354,17 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
         cvMyAttacks.visualizeRemainingOpponentShips(mOpponentShipsPositions)
     }
 
-    private fun transformStringToIntMatrix(inputString: String?): Array<Array<Int>> {
-        var counter = 0
-        val outputMatrix = Array(10) { Array(10) { 0 } }
-        for (i in outputMatrix.indices) {
-            for (j in outputMatrix.indices) {
-                outputMatrix[i][j] = inputString!![counter].digitToInt()
-                counter++
-            }
-        }
-        return outputMatrix
-    }
+//    private fun transformStringToIntMatrix(inputString: String?): Array<Array<Int>> {
+//        var counter = 0
+//        val outputMatrix = Array(10) { Array(10) { 0 } }
+//        for (i in outputMatrix.indices) {
+//            for (j in outputMatrix.indices) {
+//                outputMatrix[i][j] = inputString!![counter].digitToInt()
+//                counter++
+//            }
+//        }
+//        return outputMatrix
+//    }
 
     private fun executeOnStartIfWasOnPause() {
         //Restore my Ships and my Attacks states as they were before the activity went onPause
@@ -403,13 +424,13 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
         Toast.makeText(this, messageToShow, Toast.LENGTH_LONG).show()
     }
 
-    override fun onReceiveMessage(messageType: Int, message: Any?) {
+    override fun onReceiveEvent(messageType: Int, message: Any?) {
         when(messageType){
-            Constants.MESSAGE_WRITE -> {
+            BtEvents.EVENT_WRITE -> {
                 Log.d(TAG, "onReceiveMessage: sending attack to the enemy")
             }
-            Constants.MESSAGE_READ -> {
-                val bytes = (message as Bundle).getByteArray(Constants.BYTES) ?: return
+            BtEvents.EVENT_READ -> {
+                val bytes = (message as Bundle).getByteArray(BtEvents.BYTES) ?: return
                 mReceivedBluetoothMessage = String(bytes)
             }
         }
