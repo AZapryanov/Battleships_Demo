@@ -62,6 +62,7 @@ object BluetoothService {
         mListeners.remove(listener)
     }
 
+    @Synchronized
     private fun sendMessage(messageType: Int, message: Any?){
         for(listener in mListeners){
             listener.onReceiveMessage(messageType, message)
@@ -138,6 +139,7 @@ object BluetoothService {
             mInsecureAcceptThread!!.start()
         }
 
+        sendMessage(Constants.MESSAGE_LISTENING, null)
         notifyStateChange()
     }
 
@@ -197,6 +199,9 @@ object BluetoothService {
         // Start the thread to manage the connection and perform transmissions
         mConnectedThread = ConnectedThread(socket, socketType)
         mConnectedThread!!.start()
+
+        sendMessage(Constants.MESSAGE_CONNECTED, device)
+        sendMessage(Constants.MESSAGE_TOAST, "Connected to ${device.name}")
 
         notifyStateChange()
     }
@@ -300,8 +305,6 @@ object BluetoothService {
             }
             mmServerSocket = tmp
             mState = STATE_LISTEN
-
-            sendMessage(Constants.MESSAGE_LISTENING, null)
         }
 
         override fun run() {
@@ -459,9 +462,6 @@ object BluetoothService {
             mmInStream = tmpIn
             mmOutStream = tmpOut
             mState = STATE_CONNECTED
-
-            // Send the connected device back to the UI Activity
-            sendMessage(Constants.MESSAGE_CONNECTED, null)
         }
 
         override fun run() {
