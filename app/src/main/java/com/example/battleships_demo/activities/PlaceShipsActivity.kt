@@ -79,8 +79,9 @@ class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
                 }
             }
             BtEvents.EVENT_READ -> {
-                val bytes = (message as Bundle).getByteArray(BtEvents.BYTES) ?: return
-                mEnemyBoard = bytesToSquareGrid(bytes, 10)
+                val buffer = (message as Bundle).getByteArray(BtEvents.BYTES) ?: return
+                val byteCnt = message.getInt(BtEvents.BYTE_COUNT)
+                mEnemyBoard = bytesToSquareGrid(buffer, byteCnt, 10)
                 otherPlayerReady = true
             }
         }
@@ -108,17 +109,15 @@ class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
         }
     }
 
-    private fun bytesToSquareGrid(bytes: ByteArray, gridSize: Int): Array<Array<Int>>?{
-        if (gridSize * gridSize > bytes.size) {
-            Log.d(TAG, "bytesToGrid: cant turn byteArray of size ${bytes.size} into a ${gridSize}x$gridSize grid")
-            return null
-        } else if(gridSize >= 100){
+    private fun bytesToSquareGrid(buffer: ByteArray, byteCnt: Int, gridSize: Int): Array<Array<Int>>?{
+        if (gridSize * gridSize > byteCnt) {
+            Log.d(TAG, "bytesToGrid: cant turn byteArray of size $byteCnt into a ${gridSize}x$gridSize grid")
             return null
         }
 
         val grid = Array(gridSize) { Array(gridSize) {0} }
-        bytes.forEachIndexed { index, byte ->
-            if (index >= 100) return@forEachIndexed
+        buffer.forEachIndexed { index, byte ->
+            if (index >= byteCnt) return@forEachIndexed
             grid[index / 10][index % 10] = byte.toInt()
         }
 
