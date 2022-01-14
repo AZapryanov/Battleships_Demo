@@ -49,14 +49,12 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
 
     private lateinit var gameActivityViewModel: GameActivityViewModel
 
-    private var mReceivedAttackThroughBt = ""
     private var mCoordinatesToSend = ""
     private var mReceivedBluetoothMessage = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
-        BluetoothService.clearReceivedMessage()
 
         gameActivityViewModel = ViewModelProvider(this)[GameActivityViewModel::class.java]
         BluetoothService.register(this)
@@ -286,23 +284,16 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
         mIsWaitingForOpponentTurn = true
         mCoordinatesToSend = ""
         lifecycleScope.launch(Dispatchers.Default) {
-            BluetoothService.clearReceivedMessage()
             Log.d(TAG, "Waiting for opponent attack.")
 
             //Waiting to receive opponent attack coordinates and to start my next turn
             while (true) {
                 if (mReceivedBluetoothMessage.length > 1) {
-                    for (i in mReceivedBluetoothMessage.indices) {
-                        if (mReceivedBluetoothMessage[i].code in 48..57) {
-                            mReceivedAttackThroughBt += mReceivedBluetoothMessage[i].digitToInt()
-                        }
-                    }
-                    Log.d(TAG, mReceivedAttackThroughBt)
 
-                    for (i in mReceivedAttackThroughBt.indices) {
-                        mOpponentAttackCoordinates[i] = mReceivedAttackThroughBt[i].digitToInt()
+                    for (i in mReceivedBluetoothMessage.indices) {
+                        mOpponentAttackCoordinates[i] = mReceivedBluetoothMessage[i].digitToInt()
                     }
-                    Log.d(TAG, "Opponent attack received. $mReceivedAttackThroughBt")
+                    Log.d(TAG, "Opponent attack received. $mReceivedBluetoothMessage")
                     break
                 }
             }
@@ -310,7 +301,6 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
             launch(Dispatchers.Main) {
                 mIsWaitingForOpponentTurn = false
                 mReceivedBluetoothMessage = ""
-                mReceivedAttackThroughBt = ""
                 //When attack coordinates are received from the other player through BT,
                 //by switching the value of mIsMyTurn (it is observed), my next turn is started
                 startNextTurn()
