@@ -393,7 +393,8 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
             }
             BtEvents.EVENT_READ -> {
                 val bytes = (message as Bundle).getByteArray(BtEvents.BYTES) ?: return
-                mReceivedBluetoothMessage = String(bytes)
+                val byteCnt = message.getInt(BtEvents.BYTE_COUNT)
+                mReceivedBluetoothMessage = String(bytes, 0, byteCnt)
             }
         }
     }
