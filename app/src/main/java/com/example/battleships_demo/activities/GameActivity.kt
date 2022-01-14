@@ -41,7 +41,6 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
     private var mIsNotFirstTurn = false
     private var mIsEndgame = false
     private var mIsAttackAfterHit = false
-    private var mIsStartOfTheGame = true
     private var mIsWaitingForOpponentTurn = false
     private var mIsActivityPaused = false
 
@@ -60,51 +59,13 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
         BluetoothService.clearReceivedMessage()
 
         gameActivityViewModel = ViewModelProvider(this)[GameActivityViewModel::class.java]
+        BluetoothService.register(this)
 
-        //The following block is executed only one time at the start of the game,
+        //The following three functions are executed only one time at the start of the game,
         // in order to set everything up for the first turn
-        //-----------------------------------------------------------------------------------------------------------------------
-        if (mIsStartOfTheGame) {
-            BluetoothService.register(this)
-            cvMyShips.setBoardState(intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>)
-
-            //Tests
-            //--------------------------------------------------------------------------------------------------
-            val myShipsFromIntent = intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>?
-            var stringMyShipsFromIntent = ""
-            for (i in myShipsFromIntent!!.indices) {
-                stringMyShipsFromIntent += myShipsFromIntent[i].toString()
-            }
-            Log.d(TAG, "My ships positions at the start of the game = $stringMyShipsFromIntent.")
-            //--------------------------------------------------------------------------------------------------
-
-
-            gameActivityViewModel.myShipsPositionsFromPreviousRound = intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>
-            gameActivityViewModel.myAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
-
-            mOpponentShipsPositions = intent.extras!!.get(PlaceShipsActivity.EXTRA_OPPONENT_SHIPS) as Array<Array<Int>>
-            Log.d(TAG, "Opponent ships positions at the start of the game = ${mOpponentShipsPositions.toString()}.")
-
-            mOpponentAttackCoordinates = Array(INITIAL_ARRAY_SIZE) { INITIAL_ARRAY_VALUE }
-
-            mIsPlayerOne = intent.getBooleanExtra(PlaceShipsActivity.EXTRA_IS_PLAYER_ONE, false)
-            Log.d(TAG, "I am player one = $mIsPlayerOne.")
-            buttonEndTurn.visibility = View.GONE
-
-            cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-            cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-            mIsStartOfTheGame = false
-
-            if (mIsPlayerOne) {
-                Log.d(TAG, "Starting my first turn.")
-                startNextTurn()
-            } else {
-                Log.d(TAG, "Waiting for opponents first turn.")
-                mIsNotFirstTurn = true
-                startWaitingForOpponentAttack()
-            }
-        }
-        //-----------------------------------------------------------------------------------------------------------------------
+        setViewModelData()
+        getExtrasFromIntent()
+        initializeTheGame()
 
         //If the value of mIsMyTurn changes due to received opponent attack coordinates through BT,
         //meaning that he finished his turn, the following code executes
@@ -192,9 +153,7 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
                         //Send my attack coordinates to the other player through BT
                         BluetoothService.write(mCoordinatesToSend.toByteArray())
                         Log.d(TAG, "Attack sent to opponent.")
-
-                        //This object is observed => Switching its value starts a coroutine
-                        // in which I wait to receive the opponent's attack and to start my next turn
+                        
                         startWaitingForOpponentAttack()
                     }
                 }
@@ -238,6 +197,34 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
         Log.d(TAG, "Entered onDestroy")
     }
 
+    private fun setViewModelData() {
+        gameActivityViewModel.myShipsPositionsFromPreviousRound = intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>
+        gameActivityViewModel.myAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
+    }
+
+    private fun getExtrasFromIntent() {
+        cvMyShips.setBoardState(intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>)
+        mOpponentShipsPositions = intent.extras!!.get(PlaceShipsActivity.EXTRA_OPPONENT_SHIPS) as Array<Array<Int>>
+        mIsPlayerOne = intent.getBooleanExtra(PlaceShipsActivity.EXTRA_IS_PLAYER_ONE, false)
+        Log.d(TAG, "I am player one = $mIsPlayerOne.")
+    }
+
+    private fun initializeTheGame() {
+            mOpponentAttackCoordinates = Array(INITIAL_ARRAY_SIZE) { INITIAL_ARRAY_VALUE }
+            buttonEndTurn.visibility = View.GONE
+
+            cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+            cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+
+            if (mIsPlayerOne) {
+                Log.d(TAG, "Starting my first turn.")
+                startNextTurn()
+            } else {
+                Log.d(TAG, "Waiting for opponents first turn.")
+                mIsNotFirstTurn = true
+                startWaitingForOpponentAttack()
+            }
+    }
 
     private fun updateMyAttacks(
         myAttackCoordinates: Array<Int>,
@@ -402,7 +389,7 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
     override fun onReceiveEvent(messageType: Int, message: Any?) {
         when(messageType){
             BtEvents.EVENT_WRITE -> {
-                Log.d(TAG, "onReceiveMessage: sending attack to the enemy")
+                Log.d(TAG, "onReceiveMessage: sending attack to the opponent")
             }
             BtEvents.EVENT_READ -> {
                 val bytes = (message as Bundle).getByteArray(BtEvents.BYTES) ?: return
