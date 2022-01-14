@@ -40,14 +40,6 @@ object BluetoothService {
     private var mState = 0
     private var mNewState = 0
 
-    // This is dumb I'll fix it
-    private var mP1Determined = false
-    private var isPlayer1 = false
-
-    var mReceivedMessage = ""
-    var mMyBoard: String? = null
-    var mEnemyBoard: String? = null
-
     interface BtListener {
         fun onReceiveEvent(eventType: Int, message: Any?)
     }
@@ -63,20 +55,6 @@ object BluetoothService {
     private fun sendMessage(eventType: Int, message: Any?){
         for(listener in mListeners){
             listener.onReceiveEvent(eventType, message)
-        }
-    }
-
-    fun clearReceivedMessage() {
-        mReceivedMessage = ""
-    }
-
-    @Synchronized
-    fun determinePlayer1(): Boolean {
-        if (mP1Determined){
-            return !isPlayer1
-        } else {
-            isPlayer1 = Random.nextInt(1, 100) > 50
-            return isPlayer1
         }
     }
 
@@ -96,9 +74,6 @@ object BluetoothService {
         mState = getState()
         Log.d(TAG, "notifyStateChange() $mNewState -> $mState")
         mNewState = mState
-
-        // Give the new state to the Handler
-        //mHandler!!.obtainMessage(Constants.MESSAGE_STATE_CHANGE, mNewState, -1).sendToTarget()
     }
 
     // Return the current connection state.
@@ -242,17 +217,6 @@ object BluetoothService {
         }
         // Perform the write unsynchronized
         r!!.write(out)
-    }
-    fun writeInt(out: Int) {
-        // Create temporary object
-        var r: ConnectedThread?
-        // Synchronize a copy of the ConnectedThread
-        synchronized(this) {
-            if (mState != STATE_CONNECTED) return
-            r = mConnectedThread
-        }
-        // Perform the write unsynchronized
-        r!!.writeInt(out)
     }
 
     /**
@@ -502,16 +466,6 @@ object BluetoothService {
                 mmOutStream!!.write(buffer)
 
                 sendMessage(BtEvents.EVENT_WRITE, buffer)
-            } catch (e: IOException) {
-                Log.e(TAG, "Exception during write", e)
-            }
-        }
-
-        fun writeInt(int: Int) {
-            try {
-                mmOutStream!!.write(int)
-
-                sendMessage(BtEvents.EVENT_WRITE, int)
             } catch (e: IOException) {
                 Log.e(TAG, "Exception during write", e)
             }
