@@ -39,7 +39,7 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
                     val cellY = (event.y / mCellHeight).toInt()
 
                     //Check whether to fill the box (set a ship) or put a cross (attack)
-                    if (mBoardState[cellX][cellY] == 2 || mBoardState[cellX][cellY] == 3) {
+                    if (mBoardState[cellY][cellX] == 2 || mBoardState[cellY][cellX] == 3) {
                         return false
 
                     } else {
@@ -54,17 +54,17 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
                         // or put a cross (attack)
                         when (mWhatToDoOnTouch) {
                             DRAW_CROSS -> {
-                                mBoardState[cellX][cellY] = 2
+                                mBoardState[cellY][cellX] = 2
                             }
                             DRAW_RED_SHIP_PART_WITH_CROSS -> {
-                                mBoardState[cellX][cellY] = 3
+                                mBoardState[cellY][cellX] = 3
                             }
                         }
 
                         invalidate()
                         mTouchCounter++
-                        mLastRecordedTouchInput[0] = cellX
-                        mLastRecordedTouchInput[1] = cellY
+                        mLastRecordedTouchInput[0] = cellY
+                        mLastRecordedTouchInput[1] = cellX
                         return true
                     }
                 }
@@ -78,8 +78,8 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
 
         for (i in 0 until mBoardSize) {
             for (j in 0 until mBoardSize) {
-                val left = mCellWidth * i
-                val top = mCellHeight * j
+                val left = mCellWidth * j
+                val top = mCellHeight * i
                 val right = left + mCellWidth
                 val bottom = top + mCellHeight
                 mCellRect.set(left, top, right, bottom)
