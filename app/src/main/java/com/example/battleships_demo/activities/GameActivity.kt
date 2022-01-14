@@ -83,8 +83,8 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
             //--------------------------------------------------------------------------------------------------
 
 
-            gameActivityViewModel.myShipsPositionsFromPreviousRound.value = intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>?
-            gameActivityViewModel.myAttacksPositionsFromPreviousRound.value = cvMyAttacks.getBoardState()
+            gameActivityViewModel.myShipsPositionsFromPreviousRound = intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>
+            gameActivityViewModel.myAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
 
             mOpponentShipsPositions = intent.extras!!.get(PlaceShipsActivity.EXTRA_OPPONENT_SHIPS) as Array<Array<Int>>
             Log.d(TAG, "Opponent ships positions at the start of the game = ${mOpponentShipsPositions.toString()}.")
@@ -124,13 +124,13 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
                     val updatedBoardState =
                         updateMyShips(
                             opponentAttackCoordinates,
-                            gameActivityViewModel.myShipsPositionsFromPreviousRound.value!!
+                            gameActivityViewModel.myShipsPositionsFromPreviousRound
                         )
                     cvMyShips.setBoardState(updatedBoardState)
                     Log.d(TAG, "My ships updated with opponent attack.")
                     mOpponentAttackCoordinates = Array(INITIAL_ARRAY_SIZE) { INITIAL_ARRAY_VALUE }
 
-                    gameActivityViewModel.myShipsPositionsFromPreviousRound.value =
+                    gameActivityViewModel.myShipsPositionsFromPreviousRound =
                         cvMyShips.getBoardState()
                     mIsEndgame = checkIfGameHasEnded(cvMyShips.getBoardState())
 
@@ -164,12 +164,12 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
                 val updatedMyAttacksPositions =
                     updateMyAttacks(
                         myAttackCoordinates,
-                        gameActivityViewModel.myAttacksPositionsFromPreviousRound.value!!
+                        gameActivityViewModel.myAttacksPositionsFromPreviousRound
                     )
 
                 cvMyAttacks.setBoardState(updatedMyAttacksPositions)
                 Log.d(TAG, "My attacks updated after check for hit.")
-                gameActivityViewModel.myAttacksPositionsFromPreviousRound.value =
+                gameActivityViewModel.myAttacksPositionsFromPreviousRound =
                     cvMyAttacks.getBoardState()
 
                 mIsEndgame = checkIfGameHasEnded(cvMyAttacks.getBoardState())
@@ -388,8 +388,8 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
     }
 
     private fun restoreShipsAndAttacksBoardStates() {
-        cvMyAttacks.setBoardState(gameActivityViewModel.myAttacksPositionsFromPreviousRound.value!!)
-        cvMyShips.setBoardState(gameActivityViewModel.myShipsPositionsFromPreviousRound.value!!)
+        cvMyAttacks.setBoardState(gameActivityViewModel.myAttacksPositionsFromPreviousRound)
+        cvMyShips.setBoardState(gameActivityViewModel.myShipsPositionsFromPreviousRound)
     }
 
     private fun setLifecycleRelatedBooleansToFalse() {
