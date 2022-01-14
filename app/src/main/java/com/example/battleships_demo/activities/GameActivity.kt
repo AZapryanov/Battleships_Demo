@@ -37,10 +37,6 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
         MutableLiveData<Int>()
     }
 
-    private val mShouldWaitForOpponentAttack: MutableLiveData<Int> by lazy {
-        MutableLiveData<Int>()
-    }
-
     private var mIsPlayerOne = true
     private var mIsNotFirstTurn = false
     private var mIsEndgame = false
@@ -195,7 +191,6 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
                     } else {
                         //Send my attack coordinates to the other player through BT
                         BluetoothService.write(mCoordinatesToSend.toByteArray())
-                        mCoordinatesToSend = ""
                         Log.d(TAG, "Attack sent to opponent.")
 
                         //This object is observed => Switching its value starts a coroutine
@@ -205,41 +200,6 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
                 }
             }
         }
-
-        mShouldWaitForOpponentAttack.observe(this, {
-            mIsWaitingForOpponentTurn = true
-            lifecycleScope.launch(Dispatchers.Default) {
-                BluetoothService.clearReceivedMessage()
-                Log.d(TAG, "Waiting for opponent attack.")
-
-                //Waiting to receive opponent attack coordinates and to start my next turn
-                while (true) {
-                    if (mReceivedBluetoothMessage.length > 1) {
-                        for (i in mReceivedBluetoothMessage.indices) {
-                            if (mReceivedBluetoothMessage[i].code in 48..57) {
-                                mReceivedAttackThroughBt += mReceivedBluetoothMessage[i].digitToInt()
-                            }
-                        }
-                        Log.d(TAG, mReceivedAttackThroughBt)
-
-                        for (i in mReceivedAttackThroughBt.indices) {
-                            mOpponentAttackCoordinates[i] = mReceivedAttackThroughBt[i].digitToInt()
-                        }
-                        Log.d(TAG, "Opponent attack received. $mReceivedAttackThroughBt")
-                        break
-                    }
-                }
-
-                launch(Dispatchers.Main) {
-                    mIsWaitingForOpponentTurn = false
-                    mReceivedBluetoothMessage = ""
-                    mReceivedAttackThroughBt = ""
-                    //When attack coordinates are received from the other player through BT,
-                    //by switching the value of mIsMyTurn (it is observed), my next turn is started
-                    startNextTurn()
-                }
-            }
-        })
     }
 
     override fun onRestart() {
@@ -354,18 +314,6 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
         cvMyAttacks.visualizeRemainingOpponentShips(mOpponentShipsPositions)
     }
 
-//    private fun transformStringToIntMatrix(inputString: String?): Array<Array<Int>> {
-//        var counter = 0
-//        val outputMatrix = Array(10) { Array(10) { 0 } }
-//        for (i in outputMatrix.indices) {
-//            for (j in outputMatrix.indices) {
-//                outputMatrix[i][j] = inputString!![counter].digitToInt()
-//                counter++
-//            }
-//        }
-//        return outputMatrix
-//    }
-
     private fun executeOnStartIfWasOnPause() {
         //Restore my Ships and my Attacks states as they were before the activity went onPause
         restoreShipsAndAttacksBoardStates()
@@ -405,14 +353,41 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
         mShouldStartMyNextTurn.value = SWAPPABLE_ONE
     }
 
-    private fun startWaitingForOpponentAttack() =
-        if (mShouldWaitForOpponentAttack.value == SWAPPABLE_ONE
-            || mShouldWaitForOpponentAttack.value == null
-        ) {
-            mShouldWaitForOpponentAttack.value = SWAPPABLE_TWO
-        } else {
-            mShouldWaitForOpponentAttack.value = SWAPPABLE_ONE
+    private fun startWaitingForOpponentAttack() {
+        mIsWaitingForOpponentTurn = true
+        mCoordinatesToSend = ""
+        lifecycleScope.launch(Dispatchers.Default) {
+            BluetoothService.clearReceivedMessage()
+            Log.d(TAG, "Waiting for opponent attack.")
+
+            //Waiting to receive opponent attack coordinates and to start my next turn
+            while (true) {
+                if (mReceivedBluetoothMessage.length > 1) {
+                    for (i in mReceivedBluetoothMessage.indices) {
+                        if (mReceivedBluetoothMessage[i].code in 48..57) {
+                            mReceivedAttackThroughBt += mReceivedBluetoothMessage[i].digitToInt()
+                        }
+                    }
+                    Log.d(TAG, mReceivedAttackThroughBt)
+
+                    for (i in mReceivedAttackThroughBt.indices) {
+                        mOpponentAttackCoordinates[i] = mReceivedAttackThroughBt[i].digitToInt()
+                    }
+                    Log.d(TAG, "Opponent attack received. $mReceivedAttackThroughBt")
+                    break
+                }
+            }
+
+            launch(Dispatchers.Main) {
+                mIsWaitingForOpponentTurn = false
+                mReceivedBluetoothMessage = ""
+                mReceivedAttackThroughBt = ""
+                //When attack coordinates are received from the other player through BT,
+                //by switching the value of mIsMyTurn (it is observed), my next turn is started
+                startNextTurn()
+            }
         }
+    }
 
     private fun showWinnerOrDefeatedImage(messageToShow: String) {
         if (messageToShow == WINNER_MESSAGE) {
