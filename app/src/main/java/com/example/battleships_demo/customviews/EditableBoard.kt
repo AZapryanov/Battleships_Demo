@@ -220,7 +220,7 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
                 for (i in 0 until ship.size) {
                     // Convert ship coords to board coords
                     val xInBoardSpace = (ship.rect.left+5) / mCellWidth + i
-                    val yInBoardSpace = (ship.rect.top+5)/ mCellHeight
+                    val yInBoardSpace = (ship.rect.top+5) / mCellHeight
                     mBoardState[yInBoardSpace][xInBoardSpace] = 1
                 }
             } else {
