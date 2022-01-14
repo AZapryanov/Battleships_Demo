@@ -506,6 +506,7 @@ object BluetoothService {
                 Log.e(TAG, "Exception during write", e)
             }
         }
+
         fun writeInt(int: Int) {
             try {
                 mmOutStream!!.write(int)
