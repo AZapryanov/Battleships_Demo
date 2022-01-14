@@ -44,12 +44,11 @@ class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
             }
             
             mBoard.finishEditing()
-            Log.d(TAG, "onCreate: ${mBoard.getBoardState()}")
             
             mHasClickedReady = true
             mMyBoard = mBoard.getBoardState()
 
-            val boardAsByteArray = ByteArray(1024)
+            val boardAsByteArray = ByteArray(100)
             mMyBoard.forEachIndexed { row, nums ->
                 nums.forEachIndexed { col, num ->
                     // "row * nums.size + col" turns 2d coords into 1d indices
@@ -57,7 +56,7 @@ class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
                     boardAsByteArray[row * nums.size + col] = num.toByte()
                 }
             }
-            Log.d(TAG, "onCreate: $boardAsByteArray")
+
             // Send your board to the other player
             BluetoothService.write(boardAsByteArray)
 
@@ -120,7 +119,7 @@ class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
         val grid = Array(gridSize) { Array(gridSize) {0} }
         bytes.forEachIndexed { index, byte ->
             if (index >= 100) return@forEachIndexed
-            grid[index % 10][index / 10] = byte.toInt()
+            grid[index / 10][index % 10] = byte.toInt()
         }
 
         return grid
