@@ -226,6 +226,13 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
             }
     }
 
+    private fun checkIfAttackIsAHit(attackCoordinates: Array<Int>): Boolean {
+        if (mOpponentShipsPositions[attackCoordinates[0]][attackCoordinates[1]] == 1) {
+            return true
+        }
+        return false
+    }
+
     private fun updateMyAttacks(
         myAttackCoordinates: Array<Int>,
         myAttacksPositions: Array<Array<Int>>,
@@ -265,71 +272,6 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
         }
 
         return myShipsPositions
-    }
-
-    private fun checkIfGameHasEnded(shipsBoard: Array<Array<Int>>): Boolean {
-        var counter = 0
-        for (i in shipsBoard.indices) {
-            for (j in shipsBoard.indices) {
-                if (shipsBoard[i][j] == 3) {
-                    counter++
-                }
-            }
-        }
-        return counter >= NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME
-    }
-
-    private fun checkIfAttackIsAHit(attackCoordinates: Array<Int>): Boolean {
-        if (mOpponentShipsPositions[attackCoordinates[0]][attackCoordinates[1]] == 1) {
-            return true
-        }
-        return false
-    }
-
-    private fun doEndgameProcedure(messageToShow: String) {
-        //Lock all inputs
-        //----------------------------------------------
-        Log.d(TAG, "Game has ended.")
-        cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-        buttonEndTurn.visibility = View.GONE
-        //----------------------------------------------
-
-        //Show appropriate pop-up message and toast for Winner or Defeated
-        showWinnerOrDefeatedImage(messageToShow)
-
-        //The remaining enemy ships are shown if game is lost
-        cvMyAttacks.visualizeRemainingOpponentShips(mOpponentShipsPositions)
-    }
-
-    private fun executeOnStartIfWasOnPause() {
-        //Restore my Ships and my Attacks states as they were before the activity went onPause
-        restoreShipsAndAttacksBoardStates()
-
-        //Check whether the activity was paused in the middle of my turn
-        // or while waiting for opponent attack and restore the game state accordingly
-        if (mIsWaitingForOpponentTurn) {
-            cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-            cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-            buttonEndTurn.visibility = View.GONE
-            setLifecycleRelatedBooleansToFalse()
-
-            startWaitingForOpponentAttack()
-        } else {
-            //Reset to false the values of the booleans which give information
-            // in what state was the game before the activity went onPause
-            setLifecycleRelatedBooleansToFalse()
-            startNextTurn()
-        }
-    }
-
-    private fun restoreShipsAndAttacksBoardStates() {
-        cvMyAttacks.setBoardState(gameActivityViewModel.myAttacksPositionsFromPreviousRound)
-        cvMyShips.setBoardState(gameActivityViewModel.myShipsPositionsFromPreviousRound)
-    }
-
-    private fun setLifecycleRelatedBooleansToFalse() {
-        mIsWaitingForOpponentTurn = false
-        mIsActivityPaused = false
     }
 
     private fun startNextTurn() = if (mShouldStartMyNextTurn.value == SWAPPABLE_ONE
@@ -376,6 +318,33 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
         }
     }
 
+    private fun checkIfGameHasEnded(shipsBoard: Array<Array<Int>>): Boolean {
+        var counter = 0
+        for (i in shipsBoard.indices) {
+            for (j in shipsBoard.indices) {
+                if (shipsBoard[i][j] == 3) {
+                    counter++
+                }
+            }
+        }
+        return counter >= NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME
+    }
+
+    private fun doEndgameProcedure(messageToShow: String) {
+        //Lock all inputs
+        //----------------------------------------------
+        Log.d(TAG, "Game has ended.")
+        cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+        buttonEndTurn.visibility = View.GONE
+        //----------------------------------------------
+
+        //Show appropriate pop-up message and toast for Winner or Defeated
+        showWinnerOrDefeatedImage(messageToShow)
+
+        //The remaining enemy ships are shown if game is lost
+        cvMyAttacks.visualizeRemainingOpponentShips(mOpponentShipsPositions)
+    }
+
     private fun showWinnerOrDefeatedImage(messageToShow: String) {
         if (messageToShow == WINNER_MESSAGE) {
             ivWinner.visibility = View.VISIBLE
@@ -384,6 +353,37 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
             ivDefeated.visibility = View.VISIBLE
         }
         Toast.makeText(this, messageToShow, Toast.LENGTH_LONG).show()
+    }
+
+    private fun executeOnStartIfWasOnPause() {
+        //Restore my Ships and my Attacks states as they were before the activity went onPause
+        restoreShipsAndAttacksBoardStates()
+
+        //Check whether the activity was paused in the middle of my turn
+        // or while waiting for opponent attack and restore the game state accordingly
+        if (mIsWaitingForOpponentTurn) {
+            cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+            cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+            buttonEndTurn.visibility = View.GONE
+            setLifecycleRelatedBooleansToFalse()
+
+            startWaitingForOpponentAttack()
+        } else {
+            //Reset to false the values of the booleans which give information
+            // in what state was the game before the activity went onPause
+            setLifecycleRelatedBooleansToFalse()
+            startNextTurn()
+        }
+    }
+
+    private fun restoreShipsAndAttacksBoardStates() {
+        cvMyAttacks.setBoardState(gameActivityViewModel.myAttacksPositionsFromPreviousRound)
+        cvMyShips.setBoardState(gameActivityViewModel.myShipsPositionsFromPreviousRound)
+    }
+
+    private fun setLifecycleRelatedBooleansToFalse() {
+        mIsWaitingForOpponentTurn = false
+        mIsActivityPaused = false
     }
 
     override fun onReceiveEvent(messageType: Int, message: Any?) {
