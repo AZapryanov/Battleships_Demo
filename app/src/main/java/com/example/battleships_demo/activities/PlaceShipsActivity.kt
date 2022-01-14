@@ -49,11 +49,11 @@ class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
             mMyBoard = mBoard.getBoardState()
 
             val boardAsByteArray = ByteArray(100)
-            mMyBoard.forEachIndexed { row, nums ->
-                nums.forEachIndexed { col, num ->
-                    // "row * nums.size + col" turns 2d coords into 1d indices
+            mMyBoard.forEachIndexed { i, nums ->
+                nums.forEachIndexed { j, num ->
+                    // "i * nums.size + j" turns 2d coords into 1d indices
                     // example: for 4x7 2d arr, coords [2, 4] would be 2*7+4 = 18
-                    boardAsByteArray[row * nums.size + col] = num.toByte()
+                    boardAsByteArray[i * nums.size + j] = num.toByte()
                 }
             }
 
