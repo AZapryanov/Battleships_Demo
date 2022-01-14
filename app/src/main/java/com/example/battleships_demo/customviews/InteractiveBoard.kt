@@ -108,17 +108,17 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
 
     private fun drawCross(canvas: Canvas?) {
         canvas?.drawLine(
-            mCellRect.left + 15,
-            mCellRect.top + 15,
-            mCellRect.right - 15,
-            mCellRect.bottom - 15,
+            (mCellRect.left   + 15).toFloat(),
+            (mCellRect.top    + 15).toFloat(),
+            (mCellRect.right  - 15).toFloat(),
+            (mCellRect.bottom - 15).toFloat(),
             mDefRectPaint
         )
         canvas?.drawLine(
-            mCellRect.left + 15,
-            mCellRect.bottom - 15,
-            mCellRect.right - 15,
-            mCellRect.top + 15,
+            (mCellRect.left   + 15).toFloat(),
+            (mCellRect.bottom - 15).toFloat(),
+            (mCellRect.right  - 15).toFloat(),
+            (mCellRect.top    + 15).toFloat(),
             mDefRectPaint
         )
     }

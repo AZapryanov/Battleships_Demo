@@ -1,18 +1,15 @@
 package com.example.battleships_demo.customviews
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.RectF
+import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
 import com.example.battleships_demo.R
 
 open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
     protected var mBoardSize: Int
-    protected var mCellWidth: Float = 0f
-    protected var mCellHeight: Float = 0f
+    protected var mCellWidth: Int = 0
+    protected var mCellHeight: Int = 0
 
     // This creates a 2D array initialized with 0s
     protected var mBoardState: Array<Array<Int>>
@@ -22,7 +19,7 @@ open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
     // Used to fill boxes with already attacked ship parts in them
     protected val mRedPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
-    protected var mCellRect: RectF
+    protected var mCellRect: Rect
 
     companion object {
         private const val TAG = "Board"
@@ -42,7 +39,7 @@ open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
             }
         }
 
-        mBoardState = Array(mBoardSize) { Array(mBoardSize) { 0 } }
+        mBoardState = Array(mBoardSize) { Array(mBoardSize) {0} }
 
         mDefRectPaint.style = Paint.Style.STROKE
         mDefRectPaint.color = Color.BLACK
@@ -54,14 +51,14 @@ open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
         mRedPaint.style = Paint.Style.FILL
         mRedPaint.color = Color.RED
 
-        mCellRect = RectF()
+        mCellRect = Rect()
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
 
-        mCellWidth = (w.toFloat() / mBoardSize)
-        mCellHeight = (h.toFloat() / mBoardSize)
+        mCellWidth = (w / mBoardSize)
+        mCellHeight = (h / mBoardSize)
     }
 
     override fun onDraw(canvas: Canvas?) {

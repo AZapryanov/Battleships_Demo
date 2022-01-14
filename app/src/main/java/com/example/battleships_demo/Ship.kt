@@ -1,16 +1,16 @@
 package com.example.battleships_demo
 
-import android.graphics.RectF
+import android.graphics.Rect
 
 class Ship(val size: Int) {
-    var rect = RectF()
-    var initialPos = RectF()
+    var rect = Rect()
+    var initialPos = Rect()
     var hasInvalidPos = false
     var isTouched = false
     var isHorizontal = true
 
     fun turn(){
-        val tmpRect = RectF()
+        val tmpRect = Rect()
         if (isHorizontal){
             tmpRect.left   = rect.left
             tmpRect.top    = rect.top
@@ -29,7 +29,7 @@ class Ship(val size: Int) {
     }
 
     fun returnToInitPos(){
-        rect = RectF(initialPos)
+        rect = Rect(initialPos)
         isHorizontal = true
     }
 }

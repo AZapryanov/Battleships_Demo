@@ -17,9 +17,9 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
         private const val TAG = "EditableBoard"
     }
 
-    private val mBoardRect = RectF()
+    private val mBoardRect = Rect()
     private val mShips = arrayOf(Ship(5), Ship(4), Ship(3), Ship(3), Ship(2))
-    private var mTmpRect = RectF()
+    private var mTmpRect = Rect()
     private val mMarginTop = 60
     private val mMarginLeft = 30
 
@@ -34,7 +34,7 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
 
         // Determine which ship has been touched
         for(ship in mShips){
-            if (ship.rect.contains(e!!.x, e.y)){
+            if (ship.rect.contains(e!!.x.toInt(), e.y.toInt())){
                 Log.d(TAG, "onDown: ship of size ${ship.size}")
                 ship.isTouched = true
                 value = true
@@ -65,7 +65,7 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
                         right = left + ship.rect.width()
                         bottom = top + ship.rect.height()
                     }
-                    ship.rect.set(RectF(mTmpRect))
+                    ship.rect.set(Rect(mTmpRect))
                 }
             }
         invalidate()
@@ -106,36 +106,36 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
     // May be better to override onMeasure() here?!
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         // Cell height is equal to cell width for cells to be square
-        mCellWidth = (w.toFloat() / mBoardSize)
+        mCellWidth = (w / mBoardSize)
         mCellHeight = mCellWidth
 
-        mBoardRect.set(0f, 0f, mCellWidth*mBoardSize, mCellHeight*mBoardSize)
+        mBoardRect.set(0, 0, mCellWidth*mBoardSize, mCellHeight*mBoardSize)
 
         /** Initialize all ships here after getting the cell width and height
          *  Ships array(index -> ship size): 0 -> 5, 1 -> 4, 2 -> 3, 3 -> 3, 4 -> 2 */
         // First row
-        var x = 0f
+        var x = 0
         var y = mBoardRect.bottom + mMarginTop
         mShips[0].rect.set(x, y, x+(mCellWidth*mShips[0].size), y+mCellHeight)
-        mShips[0].initialPos.set(RectF(mShips[0].rect))
+        mShips[0].initialPos.set(Rect(mShips[0].rect))
 
         x = mShips[0].rect.right + mMarginLeft
         mShips[1].rect.set(x, y, x+(mCellWidth*mShips[1].size), y+mCellHeight)
-        mShips[1].initialPos.set(RectF(mShips[1].rect))
+        mShips[1].initialPos.set(Rect(mShips[1].rect))
 
         // Second row
-        x = 0f
+        x = 0
         y = mShips[0].rect.bottom + mMarginTop
         mShips[2].rect.set(x, y, x+(mCellWidth*mShips[2].size), y+mCellHeight)
-        mShips[2].initialPos.set(RectF(mShips[2].rect))
+        mShips[2].initialPos.set(Rect(mShips[2].rect))
 
         x = mShips[2].rect.right + mMarginLeft
         mShips[3].rect.set(x, y, x+(mCellWidth*mShips[3].size), y+mCellHeight)
-        mShips[3].initialPos.set(RectF(mShips[3].rect))
+        mShips[3].initialPos.set(Rect(mShips[3].rect))
 
         x = mShips[3].rect.right + mMarginLeft
         mShips[4].rect.set(x, y, x+(mCellWidth*mShips[4].size), y+mCellHeight)
-        mShips[4].initialPos.set(RectF(mShips[4].rect))
+        mShips[4].initialPos.set(Rect(mShips[4].rect))
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
@@ -154,12 +154,12 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
                         if(ship.isTouched){
                             // left and top are always gonna be where the touch coords are
                             // "- mCell../2" makes your finger be in the center of the ship's first square
-                            mTmpRect.left = x!! - mCellWidth/2
-                            mTmpRect.top = y!! - mCellHeight/2
+                            mTmpRect.left = (x!! - mCellWidth/2).toInt()
+                            mTmpRect.top = (y!! - mCellHeight/2).toInt()
                             mTmpRect.right = mTmpRect.left + ship.rect.width()
                             mTmpRect.bottom = mTmpRect.top + ship.rect.height()
 
-                            ship.rect.set(RectF(mTmpRect))
+                            ship.rect.set(Rect(mTmpRect))
                             evaluatePos(ship)
                             value = true
                         }
@@ -185,7 +185,7 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
                                     right = left + ship.rect.width()
                                     bottom = top + ship.rect.height()
                                 }
-                                ship.rect.set(RectF(mTmpRect))
+                                ship.rect.set(Rect(mTmpRect))
                             }
                             value = true
                         }
@@ -219,14 +219,14 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
             if (ship.isHorizontal) {
                 for (i in 0 until ship.size) {
                     // Convert ship coords to board coords
-                    val xInBoardSpace = (ship.rect.left / mCellWidth).toInt() + i
-                    val yInBoardSpace = (ship.rect.top / mCellHeight).toInt()
+                    val xInBoardSpace = (ship.rect.left+5) / mCellWidth + i
+                    val yInBoardSpace = (ship.rect.top+5)/ mCellHeight
                     mBoardState[yInBoardSpace][xInBoardSpace] = 1
                 }
             } else {
                 for (i in 0 until ship.size) {
-                    val xInBoardSpace = (ship.rect.left / mCellWidth).toInt()
-                    val yInBoardSpace = (ship.rect.top / mCellHeight).toInt() + i
+                    val xInBoardSpace = (ship.rect.left+5) / mCellWidth
+                    val yInBoardSpace = (ship.rect.top+5) / mCellHeight + i
                     mBoardState[yInBoardSpace][xInBoardSpace] = 1
                 }
             }
@@ -243,7 +243,7 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
             // Check collisions
             for(otherShip in mShips){
                 if(otherShip == ship) continue
-                if(RectF.intersects(ship.rect, otherShip.rect))
+                if(Rect.intersects(ship.rect, otherShip.rect))
                     ship.hasInvalidPos = true
             }
     }
