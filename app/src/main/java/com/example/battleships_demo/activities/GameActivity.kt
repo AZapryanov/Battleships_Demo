@@ -24,7 +24,8 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
         private const val PHASE_MARK_ATTACK = "doAttack"
         private const val PHASE_TOUCH_INPUTS_LOCKED = "lock"
         private const val SECOND_ATTACK_AFTER_HIT = "It's a hit! Do another attack."
-        private const val SHIP_HAS_BEEN_HIT_MESSAGE = "your ship has been hit! Opponent will attack again."
+        private const val SHIP_HAS_BEEN_HIT_MESSAGE =
+            "Your ship has been hit! Opponent will attack again."
         private const val WINNER_MESSAGE = "GG, You have won!"
         private const val DEFEATED_MESSAGE = "GG, You have lost."
         private const val NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME = 17
@@ -43,8 +44,8 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
     private var mIsNotFirstTurn = false
     private var mIsEndgame = false
 
-    private var mIsReceivedHitAttack = false
-    private var mIsToDoAttackAfterHit = false
+    private var mIsShipHitByOpponent = false
+    private var mIsToDoAnotherAttackAfterHit = false
 
     private var mIsWaitingForOpponentTurn = false
     private var mIsActivityPaused = false
@@ -70,28 +71,30 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
         getExtrasFromIntent()
         initializeTheGame()
 
-        //If the value of mIsMyTurn changes due to received opponent attack coordinates through BT,
-        //meaning that he finished his turn, the following code executes
         mShouldStartMyNextTurn.observe(this, {
             Log.d(TAG, "My turn starts.")
             cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-            if (!mIsReceivedHitAttack) {
+
+            //If one of my ships is hit, the opponent attacks again and I do not enter phase - mark attack
+            if (!mIsShipHitByOpponent) {
                 cvMyAttacks.setPhase(PHASE_MARK_ATTACK)
             }
 
-                //My ships are updated based on the received attack coordinated from the opponent
-                if (mIsNotFirstTurn) {
-                    if (!mIsToDoAttackAfterHit) {
+            if (mIsNotFirstTurn) {
+                //My ships board is not updated with opponent attack if I have to attack again after a successful hit
+                if (!mIsToDoAnotherAttackAfterHit) {
                     val opponentAttackCoordinates = mOpponentAttackCoordinates
                     val updatedBoardState =
                         updateMyShips(
                             opponentAttackCoordinates,
                             gameActivityViewModel.myShipsPositionsFromPreviousRound
                         )
+
+                    //My ships are updated based on the received attack coordinates from the opponent
                     cvMyShips.setBoardState(updatedBoardState)
                     Log.d(TAG, "My ships updated with opponent attack.")
-                    mOpponentAttackCoordinates = Array(INITIAL_ARRAY_SIZE) { INITIAL_ARRAY_VALUE }
 
+                    mOpponentAttackCoordinates = Array(INITIAL_ARRAY_SIZE) { INITIAL_ARRAY_VALUE }
                     gameActivityViewModel.myShipsPositionsFromPreviousRound =
                         cvMyShips.getBoardState()
                     mIsEndgame = checkIfGameHasEnded(cvMyShips.getBoardState())
@@ -101,14 +104,17 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
                     }
                 }
             }
-            mIsToDoAttackAfterHit = false
+            mIsToDoAnotherAttackAfterHit = false
             mIsNotFirstTurn = true
 
-            if (mIsReceivedHitAttack) {
+            if (mIsShipHitByOpponent) {
                 Toast.makeText(this, SHIP_HAS_BEEN_HIT_MESSAGE, Toast.LENGTH_SHORT).show()
+                Log.d(TAG, "Message to attack again sent to opponent.")
+                mIsShipHitByOpponent = false
+
+                //If the opponent's attack is successful, he receives a BT message that allows him to attack again immediately
                 BluetoothService.write(DO_ANOTHER_ATTACK.toByteArray())
-                mIsReceivedHitAttack = false
-                startWaitingForOpponentAttack()
+
             } else {
                 if (!mIsEndgame) {
                     buttonEndTurn.visibility = View.VISIBLE
@@ -140,37 +146,30 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
                 Log.d(TAG, "My attacks updated after check for hit.")
                 gameActivityViewModel.myAttacksPositionsFromPreviousRound =
                     cvMyAttacks.getBoardState()
-
                 mIsEndgame = checkIfGameHasEnded(cvMyAttacks.getBoardState())
 
                 if (mIsEndgame) {
                     doEndgameProcedure(WINNER_MESSAGE)
 
-                    //Send my attack coordinates to the other player through BT
-                    //so that his game ends too and he gets a message that he is defeated
-                    BluetoothService.write(mCoordinatesToSend.toByteArray())
-                }
-
-                if (!mIsEndgame) {
+                } else {
                     cvMyAttacks.resetBoardTouchCounter()
-
-                    //If I have hit an enemy ship on my turn I get an extra turn
-                    if (checkIfAttackIsAHit(myAttackCoordinates)) {
+                    mCoordinatesToSend += if (checkIfAttackIsAHit(myAttackCoordinates)) {
                         Toast.makeText(this, SECOND_ATTACK_AFTER_HIT, Toast.LENGTH_SHORT).show()
-                        Log.d(TAG, "The attack is a hit. Will do another attack")
-                        mCoordinatesToSend += 1
-                        BluetoothService.write(mCoordinatesToSend.toByteArray())
-                        startWaitingForOpponentAttack()
+                        Log.d(TAG, "My attack was successful, will attack again.")
+
+                        //Gives information to the opponent that my attack has hit one of his ships
+                        1
 
                     } else {
-                        //Send my attack coordinates to the other player through BT
-                        mCoordinatesToSend += 0
-                        BluetoothService.write(mCoordinatesToSend.toByteArray())
-                        Log.d(TAG, "Attack sent to opponent.")
-
-                        startWaitingForOpponentAttack()
+                        //Gives information to the opponent that my attack missed
+                        0
                     }
                 }
+
+                Log.d(TAG, "Attack sent to opponent.")
+                //Send my attack coordinates to the other player through BT
+                //so that his game ends too and he gets a message that he is defeated
+                BluetoothService.write(mCoordinatesToSend.toByteArray())
             }
         }
     }
@@ -295,34 +294,37 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
         mIsWaitingForOpponentTurn = true
         mCoordinatesToSend = ""
         lifecycleScope.launch(Dispatchers.Default) {
-            Log.d(TAG, "Waiting for opponent attack.")
+            Log.d(TAG, "Waiting for response from opponent.")
 
             //Waiting to receive opponent attack coordinates and to start my next turn
             while (true) {
                 if (mReceivedBluetoothMessage.length > 1) {
+
+                    //If I receive a DO_ANOTHER_ATTACK message it means that my previous attack was a hit
+                    // and I can attack again immediately
                     if (mReceivedBluetoothMessage == DO_ANOTHER_ATTACK) {
-                        mIsToDoAttackAfterHit = true
-                        break
+                        mIsToDoAnotherAttackAfterHit = true
+
                     } else {
                         for (i in mReceivedBluetoothMessage.indices) {
                             mOpponentAttackCoordinates[i] =
                                 mReceivedBluetoothMessage[i].digitToInt()
                         }
                         Log.d(TAG, "Opponent attack received. $mReceivedBluetoothMessage")
-                        break
                     }
+                    break
                 }
             }
 
             launch(Dispatchers.Main) {
+                //If the value at index 2 is set to 1 it means that the opponent's attack was successful
+                // and  after it is visualized on my ships board, he will attack again
                 if (mOpponentAttackCoordinates[2] == 1) {
-                    mIsReceivedHitAttack = true
+                    mIsShipHitByOpponent = true
                 }
 
                 mIsWaitingForOpponentTurn = false
                 mReceivedBluetoothMessage = ""
-                //When attack coordinates are received from the other player through BT,
-                //by switching the value of mIsMyTurn (it is observed), my next turn is started
                 startNextTurn()
             }
         }
@@ -369,21 +371,25 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
         //Restore my Ships and my Attacks states as they were before the activity went onPause
         restoreShipsAndAttacksBoardStates()
 
-        //Check whether the activity was paused in the middle of my turn
+        //Check whether the activity was paused, in the middle of my turn
         // or while waiting for opponent attack and restore the game state accordingly
         if (mIsWaitingForOpponentTurn) {
-            cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-            cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-            buttonEndTurn.visibility = View.GONE
-            setLifecycleRelatedBooleansToFalse()
+            enterWaitForOpponentAttackState()
 
-            startWaitingForOpponentAttack()
         } else {
             //Reset to false the values of the booleans which give information
             // in what state was the game before the activity went onPause
             setLifecycleRelatedBooleansToFalse()
             startNextTurn()
         }
+    }
+
+    private fun enterWaitForOpponentAttackState() {
+        cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+        cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+        buttonEndTurn.visibility = View.GONE
+        setLifecycleRelatedBooleansToFalse()
+        startWaitingForOpponentAttack()
     }
 
     private fun restoreShipsAndAttacksBoardStates() {
@@ -398,9 +404,15 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
 
     override fun onReceiveEvent(messageType: Int, message: Any?) {
         when (messageType) {
-            BtEvents.EVENT_WRITE -> {
-                Log.d(TAG, "onReceiveMessage: sending attack to the opponent")
+            BtEvents.EVENT_LISTENING -> {
+                BluetoothService.unregister(this)
+                finish()
             }
+
+            BtEvents.EVENT_WRITE -> {
+                startWaitingForOpponentAttack()
+            }
+
             BtEvents.EVENT_READ -> {
                 val bytes = (message as Bundle).getByteArray(BtEvents.BYTES) ?: return
                 val byteCnt = message.getInt(BtEvents.BYTE_COUNT)
