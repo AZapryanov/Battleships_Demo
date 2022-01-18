@@ -9,16 +9,16 @@ import com.example.battleships_demo.activities.GameActivity
 class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, attrs) {
     companion object {
         private const val TAG = "InteractiveBoard"
-        const val DRAW_CROSS = "drawCross"
-        const val DRAW_RED_SHIP_PART_WITH_CROSS = "drawRedShipPartWithCross"
-        const val NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME = 17
-        const val EMPTY_BOX = 0
-        const val SHIP_PART = 1
-        const val CROSS = 2
-        const val SHIP_PART_HIT = 3
+        private const val DRAW_CROSS = "drawCross"
+        private const val DRAW_RED_SHIP_PART_WITH_CROSS = "drawRedShipPartWithCross"
+        private const val NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME = 17
+        private const val EMPTY_BOX = 0
+        private const val SHIP_PART = 1
+        private const val CROSS = 2
+        private const val SHIP_PART_HIT = 3
     }
 
-    var mOpponentShipsPositions = Array(mBoardSize) { Array(mBoardSize) { 0 } }
+    private var mOpponentShipsPositions = Array(mBoardSize) { Array(mBoardSize) { 0 } }
 
     private var mWhatToDoOnTouch: String = ""
     private var mCurrentPhase: String = ""
@@ -42,14 +42,13 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
                     val cellX = (event.x / mCellWidth).toInt()
                     val cellY = (event.y / mCellHeight).toInt()
 
-                    //Check whether to fill the box (set a ship) or put a cross (attack)
-                    if (mBoardState[cellY][cellX] == 2 || mBoardState[cellY][cellX] == 3) {
+                    //If there isalready a Cross or Hit ship part - do nothing
+                    if (mBoardState[cellY][cellX] ==  CROSS || mBoardState[cellY][cellX] == SHIP_PART_HIT) {
                         return false
 
                     } else {
                         //During my attack turn if I want to change my attack location, when I click again,
-                        // the previously clicked box will become blank again when the view redraws itself,
-                        // because here its value gets set to 0
+                        // the previously clicked box will become blank when the view redraws itself
                         if (mTouchCounter >= 1 && mCurrentPhase == "doAttack") {
                             mBoardState[mLastRecordedTouchInput[0]][mLastRecordedTouchInput[1]] = 0
                         }
@@ -58,10 +57,10 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
                         // or put a cross (attack)
                         when (mWhatToDoOnTouch) {
                             DRAW_CROSS -> {
-                                mBoardState[cellY][cellX] = 2
+                                mBoardState[cellY][cellX] = CROSS
                             }
                             DRAW_RED_SHIP_PART_WITH_CROSS -> {
-                                mBoardState[cellY][cellX] = 3
+                                mBoardState[cellY][cellX] = SHIP_PART_HIT
                             }
                         }
 
@@ -140,27 +139,16 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
         invalidate()
     }
 
-    fun getLastTouchInput(): Array<Int> {
-        return mLastRecordedTouchInput
-    }
-
-    fun visualizeRemainingOpponentShips() {
-        for (i in 0 until mBoardSize) {
-            for (j in 0 until mBoardSize) {
-                if (mOpponentShipsPositions[i][j] == 1 && mBoardState[i][j] == 0) {
-                    mBoardState[i][j] = 1
-                }
-            }
-        }
-        invalidate()
-    }
-
     fun getTouchCounter(): Int {
         return mTouchCounter
     }
 
     fun resetBoardTouchCounter() {
         mTouchCounter = 0
+    }
+
+    fun getLastTouchInput(): Array<Int> {
+        return mLastRecordedTouchInput
     }
 
     fun setOpponentShipsPositions(opponentShips: Array<Array<Int>>) {
@@ -174,11 +162,11 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
         val opponentAttackX = myAttackCoordinates[0]
         val opponentAttackY = myAttackCoordinates[1]
 
-        if (mOpponentShipsPositions[opponentAttackX][opponentAttackY] == InteractiveBoard.EMPTY_BOX) {
-            myAttacksPositions[opponentAttackX][opponentAttackY] = InteractiveBoard.CROSS
+        if (mOpponentShipsPositions[opponentAttackX][opponentAttackY] == EMPTY_BOX) {
+            myAttacksPositions[opponentAttackX][opponentAttackY] = CROSS
 
-        } else if (mOpponentShipsPositions[opponentAttackX][opponentAttackY] == InteractiveBoard.SHIP_PART) {
-            myAttacksPositions[opponentAttackX][opponentAttackY] = InteractiveBoard.SHIP_PART_HIT
+        } else if (mOpponentShipsPositions[opponentAttackX][opponentAttackY] == SHIP_PART) {
+            myAttacksPositions[opponentAttackX][opponentAttackY] = SHIP_PART_HIT
         }
         return myAttacksPositions
     }
@@ -190,18 +178,18 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
         val opponentAttackX = opponentAttackCoordinates[0]
         val opponentAttackY = opponentAttackCoordinates[1]
 
-        if (myShipsPositions[opponentAttackX][opponentAttackY] == InteractiveBoard.EMPTY_BOX) {
-            myShipsPositions[opponentAttackX][opponentAttackY] = InteractiveBoard.CROSS
+        if (myShipsPositions[opponentAttackX][opponentAttackY] == EMPTY_BOX) {
+            myShipsPositions[opponentAttackX][opponentAttackY] = CROSS
 
-        } else if (myShipsPositions[opponentAttackX][opponentAttackY] == InteractiveBoard.SHIP_PART) {
-            myShipsPositions[opponentAttackX][opponentAttackY] = InteractiveBoard.SHIP_PART_HIT
+        } else if (myShipsPositions[opponentAttackX][opponentAttackY] == SHIP_PART) {
+            myShipsPositions[opponentAttackX][opponentAttackY] = SHIP_PART_HIT
         }
 
         return myShipsPositions
     }
 
     fun checkIfAttackIsAHit(attackCoordinates: Array<Int>): Boolean {
-        if (mOpponentShipsPositions[attackCoordinates[0]][attackCoordinates[1]] == 1) {
+        if (mOpponentShipsPositions[attackCoordinates[0]][attackCoordinates[1]] == SHIP_PART) {
             return true
         }
         return false
@@ -211,11 +199,22 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
         var counter = 0
         for (i in mBoardState.indices) {
             for (j in mBoardState.indices) {
-                if (mBoardState[i][j] == 3) {
+                if (mBoardState[i][j] == SHIP_PART_HIT) {
                     counter++
                 }
             }
         }
         return counter >= NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME
+    }
+
+    fun visualizeRemainingOpponentShips() {
+        for (i in 0 until mBoardSize) {
+            for (j in 0 until mBoardSize) {
+                if (mOpponentShipsPositions[i][j] == SHIP_PART && mBoardState[i][j] == EMPTY_BOX) {
+                    mBoardState[i][j] = SHIP_PART
+                }
+            }
+        }
+        invalidate()
     }
 }
