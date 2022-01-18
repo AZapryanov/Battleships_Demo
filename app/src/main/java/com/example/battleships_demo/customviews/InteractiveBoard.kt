@@ -4,17 +4,21 @@ import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.MotionEvent
+import com.example.battleships_demo.activities.GameActivity
 
 class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, attrs) {
     companion object {
         private const val TAG = "InteractiveBoard"
         const val DRAW_CROSS = "drawCross"
         const val DRAW_RED_SHIP_PART_WITH_CROSS = "drawRedShipPartWithCross"
+        const val NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME = 17
         const val EMPTY_BOX = 0
         const val SHIP_PART = 1
         const val CROSS = 2
         const val SHIP_PART_HIT = 3
     }
+
+    var mOpponentShipsPositions = Array(mBoardSize) { Array(mBoardSize) { 0 } }
 
     private var mWhatToDoOnTouch: String = ""
     private var mCurrentPhase: String = ""
@@ -140,10 +144,10 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
         return mLastRecordedTouchInput
     }
 
-    fun visualizeRemainingOpponentShips(opponentShips: Array<Array<Int>>) {
+    fun visualizeRemainingOpponentShips() {
         for (i in 0 until mBoardSize) {
             for (j in 0 until mBoardSize) {
-                if (opponentShips[i][j] == 1 && mBoardState[i][j] == 0) {
+                if (mOpponentShipsPositions[i][j] == 1 && mBoardState[i][j] == 0) {
                     mBoardState[i][j] = 1
                 }
             }
@@ -157,5 +161,61 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
 
     fun resetBoardTouchCounter() {
         mTouchCounter = 0
+    }
+
+    fun setOpponentShipsPositions(opponentShips: Array<Array<Int>>) {
+        mOpponentShipsPositions = opponentShips
+    }
+
+    fun updateMyAttacks(
+        myAttackCoordinates: Array<Int>,
+        myAttacksPositions: Array<Array<Int>>,
+    ): Array<Array<Int>> {
+        val opponentAttackX = myAttackCoordinates[0]
+        val opponentAttackY = myAttackCoordinates[1]
+
+        if (mOpponentShipsPositions[opponentAttackX][opponentAttackY] == InteractiveBoard.EMPTY_BOX) {
+            myAttacksPositions[opponentAttackX][opponentAttackY] = InteractiveBoard.CROSS
+
+        } else if (mOpponentShipsPositions[opponentAttackX][opponentAttackY] == InteractiveBoard.SHIP_PART) {
+            myAttacksPositions[opponentAttackX][opponentAttackY] = InteractiveBoard.SHIP_PART_HIT
+        }
+        return myAttacksPositions
+    }
+
+    fun updateMyShips(
+        opponentAttackCoordinates: Array<Int>,
+        myShipsPositions: Array<Array<Int>>,
+    ): Array<Array<Int>> {
+        val opponentAttackX = opponentAttackCoordinates[0]
+        val opponentAttackY = opponentAttackCoordinates[1]
+
+        if (myShipsPositions[opponentAttackX][opponentAttackY] == InteractiveBoard.EMPTY_BOX) {
+            myShipsPositions[opponentAttackX][opponentAttackY] = InteractiveBoard.CROSS
+
+        } else if (myShipsPositions[opponentAttackX][opponentAttackY] == InteractiveBoard.SHIP_PART) {
+            myShipsPositions[opponentAttackX][opponentAttackY] = InteractiveBoard.SHIP_PART_HIT
+        }
+
+        return myShipsPositions
+    }
+
+    fun checkIfAttackIsAHit(attackCoordinates: Array<Int>): Boolean {
+        if (mOpponentShipsPositions[attackCoordinates[0]][attackCoordinates[1]] == 1) {
+            return true
+        }
+        return false
+    }
+
+    fun checkIfGameHasEnded(): Boolean {
+        var counter = 0
+        for (i in mBoardState.indices) {
+            for (j in mBoardState.indices) {
+                if (mBoardState[i][j] == 3) {
+                    counter++
+                }
+            }
+        }
+        return counter >= NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME
     }
 }
