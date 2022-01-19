@@ -86,8 +86,8 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
                     mOpponentAttackCoordinates = Array(INITIAL_ARRAY_SIZE) { INITIAL_ARRAY_VALUE }
 
                     gameActivityViewModel.myShipsPositionsFromPreviousRound =
-                        cvMyShips.getBoardState()
-                    mIsEndgame = checkIfGameHasEnded(cvMyShips.getBoardState())
+                        cvMyShips.getState()
+                    mIsEndgame = checkIfGameHasEnded(cvMyShips.getState())
 
                     if (mIsEndgame) {
                         doEndgameProcedure(DEFEATED_MESSAGE)
@@ -125,9 +125,9 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
                 cvMyAttacks.setBoardState(updatedMyAttacksPositions)
                 Log.d(TAG, "My attacks updated after check for hit.")
                 gameActivityViewModel.myAttacksPositionsFromPreviousRound =
-                    cvMyAttacks.getBoardState()
+                    cvMyAttacks.getState()
 
-                mIsEndgame = checkIfGameHasEnded(cvMyAttacks.getBoardState())
+                mIsEndgame = checkIfGameHasEnded(cvMyAttacks.getState())
 
                 if (mIsEndgame) {
                     doEndgameProcedure(WINNER_MESSAGE)
@@ -197,7 +197,7 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
 
     private fun setViewModelData() {
         gameActivityViewModel.myShipsPositionsFromPreviousRound = intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>
-        gameActivityViewModel.myAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
+        gameActivityViewModel.myAttacksPositionsFromPreviousRound = cvMyAttacks.getState()
     }
 
     private fun getExtrasFromIntent() {
