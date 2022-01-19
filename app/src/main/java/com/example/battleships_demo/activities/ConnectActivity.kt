@@ -19,7 +19,6 @@ import com.example.battleships_demo.bluetooth.BtEvents
 class ConnectActivity : AppCompatActivity(), BluetoothService.BtListener {
 
     private var mConnectedDeviceName: String? = null
-    private var mOutStringBuffer: StringBuffer? = null
     private var mBluetoothAdapter: BluetoothAdapter? = null
 
     private lateinit var mStatusText: TextView
@@ -71,9 +70,6 @@ class ConnectActivity : AppCompatActivity(), BluetoothService.BtListener {
                 REQUEST_ENABLE_BT
             )
         }
-
-        // Initialize the buffer for outgoing messages
-        mOutStringBuffer = StringBuffer()
 
         BluetoothService.start()
     }
