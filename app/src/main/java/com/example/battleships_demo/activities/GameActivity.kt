@@ -19,8 +19,6 @@ import kotlinx.coroutines.launch
 class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
 
     companion object {
-        const val INITIAL_ARRAY_VALUE = 15
-        const val INITIAL_ARRAY_SIZE = 3
         private const val TAG = "GameActivity"
         private const val PHASE_MARK_ATTACK = "doAttack"
         private const val PHASE_TOUCH_INPUTS_LOCKED = "lock"
