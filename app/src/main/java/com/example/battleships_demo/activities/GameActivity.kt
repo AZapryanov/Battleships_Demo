@@ -19,6 +19,8 @@ import kotlinx.coroutines.launch
 class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
 
     companion object {
+        const val INITIAL_ARRAY_VALUE = 15
+        const val INITIAL_ARRAY_SIZE = 3
         private const val TAG = "GameActivity"
         private const val PHASE_MARK_ATTACK = "doAttack"
         private const val PHASE_TOUCH_INPUTS_LOCKED = "lock"
@@ -28,8 +30,6 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
         private const val DO_ANOTHER_ATTACK = "Do another Attack"
         private const val WINNER_MESSAGE = "GG, You have won!"
         private const val DEFEATED_MESSAGE = "GG, You have lost."
-        private const val INITIAL_ARRAY_VALUE = 15
-        private const val INITIAL_ARRAY_SIZE = 3
         private const val SWAPPABLE_ONE = 1
         private const val SWAPPABLE_TWO = 2
     }
@@ -46,7 +46,6 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
     private var mIsWaitingForOpponentTurn = false
     private var mIsActivityPaused = false
 
-    private lateinit var mOpponentAttackCoordinates: Array<Int>
     private lateinit var gameActivityViewModel: GameActivityViewModel
 
     private var mCoordinatesToSend = ""
@@ -58,8 +57,6 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
 
         gameActivityViewModel = ViewModelProvider(this)[GameActivityViewModel::class.java]
         BluetoothService.register(this)
-
-        mOpponentAttackCoordinates = Array(INITIAL_ARRAY_SIZE) { INITIAL_ARRAY_VALUE }
         buttonEndTurn.visibility = View.GONE
 
         //The following four functions are executed only one time at the start of the game
@@ -82,12 +79,11 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
                 if (!mIsToDoAnotherAttackAfterHit) {
                     //My ships are updated based on the received attack coordinates from the opponent
                     cvMyShips.updateMyShips(
-                        mOpponentAttackCoordinates,
+                        gameActivityViewModel.opponentAttackCoordinates,
                         gameActivityViewModel.myShipsPositionsFromPreviousRound
                     )
                     Log.d(TAG, "My ships updated with opponent attack.")
-
-                    mOpponentAttackCoordinates = Array(INITIAL_ARRAY_SIZE) { INITIAL_ARRAY_VALUE }
+                    
                     gameActivityViewModel.myShipsPositionsFromPreviousRound =
                         cvMyShips.getBoardState()
                     mIsEndgame = cvMyShips.checkIfGameHasEnded()
@@ -246,7 +242,7 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
             launch(Dispatchers.Main) {
                 //If the value at index 2 is set to 1 it means that the opponent's attack was successful
                 // and after it is visualized on my ships board, he will attack again
-                if (mOpponentAttackCoordinates[2] == 1) {
+                if (gameActivityViewModel.opponentAttackCoordinates[2] == 1) {
                     mIsShipHitByOpponent = true
                 }
 
@@ -264,7 +260,7 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
 
         } else {
             for (i in mReceivedBluetoothMessage.indices) {
-                mOpponentAttackCoordinates[i] =
+                gameActivityViewModel.opponentAttackCoordinates[i] =
                     mReceivedBluetoothMessage[i].digitToInt()
             }
             Log.d(TAG, "Opponent attack received. $mReceivedBluetoothMessage")
