@@ -158,7 +158,7 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
     fun updateMyAttacks(
         myAttackCoordinates: Array<Int>,
         myAttacksPositions: Array<Array<Int>>,
-    ): Array<Array<Int>> {
+    ) {
         val opponentAttackX = myAttackCoordinates[0]
         val opponentAttackY = myAttackCoordinates[1]
 
@@ -168,13 +168,14 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
         } else if (mOpponentShipsPositions[opponentAttackX][opponentAttackY] == SHIP_PART) {
             myAttacksPositions[opponentAttackX][opponentAttackY] = SHIP_PART_HIT
         }
-        return myAttacksPositions
+        mBoardState = myAttacksPositions
+        invalidate()
     }
 
     fun updateMyShips(
         opponentAttackCoordinates: Array<Int>,
         myShipsPositions: Array<Array<Int>>,
-    ): Array<Array<Int>> {
+    ) {
         val opponentAttackX = opponentAttackCoordinates[0]
         val opponentAttackY = opponentAttackCoordinates[1]
 
@@ -185,7 +186,8 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
             myShipsPositions[opponentAttackX][opponentAttackY] = SHIP_PART_HIT
         }
 
-        return myShipsPositions
+        mBoardState = myShipsPositions
+        invalidate()
     }
 
     fun checkIfAttackIsAHit(attackCoordinates: Array<Int>): Boolean {
