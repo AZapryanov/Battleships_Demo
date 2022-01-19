@@ -5,16 +5,18 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
-import com.example.battleships_demo.bluetooth.BtEvents
 import com.example.battleships_demo.customviews.EditableBoard
+import com.example.battleships_demo.viemodels.PlaceShipsViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.coroutines.*
 
-class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
+class PlaceShipsActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "PlaceShipsActivity"
@@ -24,41 +26,33 @@ class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
         const val EXTRA_IS_PLAYER_ONE = "isPlayerOneOrTwo"
     }
 
+    private lateinit var mViewModel: PlaceShipsViewModel
     private lateinit var mBoard: EditableBoard
-    private var otherPlayerReady = false
-    private var mHasClickedReady = false
-    private lateinit var mMyBoard: Array<Array<Int>>
-    private var mEnemyBoard: Array<Array<Int>>? = null
-    private var mIsPlayer1 = false
+    private var mIsReady = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_place_ships)
+        Log.d(TAG, "onCreate: Entered")
 
+        mViewModel = ViewModelProvider(this)[PlaceShipsViewModel::class.java]
         mBoard = findViewById(R.id.editable_board)
-        BluetoothService.register(this)
+        BluetoothService.register(mViewModel)
+
+        mViewModel.mIsDisconnectedLiveData.observe(this) { isDisconnected ->
+            if(isDisconnected) finish()
+        }
 
         findViewById<Button>(R.id.btn_ready).setOnClickListener {
-            if (mHasClickedReady){
+            if (mIsReady) return@setOnClickListener
+            if(!mBoard.finishEditing()){
+                Toast.makeText(this, "Place all your ships", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            
-            mBoard.finishEditing()
-            
-            mHasClickedReady = true
-            mMyBoard = mBoard.getBoardState()
 
-            val boardAsByteArray = ByteArray(100)
-            mMyBoard.forEachIndexed { i, nums ->
-                nums.forEachIndexed { j, num ->
-                    // "i * nums.size + j" turns 2d coords into 1d indices
-                    // example: for 4x7 2d arr, coords [2, 4] would be 2*7+4 = 18
-                    boardAsByteArray[i * nums.size + j] = num.toByte()
-                }
-            }
-
-            // Send your board to the other player
-            BluetoothService.write(boardAsByteArray)
+            mIsReady = true
+            mViewModel.mMyBoardState = mBoard.getState()
+            mViewModel.sendBoardState()
 
             CoroutineScope(Dispatchers.IO).launch {
                 startGameActivity()
@@ -66,61 +60,25 @@ class PlaceShipsActivity : AppCompatActivity(), BluetoothService.BtListener {
         }
     }
 
-    override fun onReceiveEvent(eventType: Int, message: Any?) {
-        when(eventType){
-            BtEvents.EVENT_LISTENING -> {
-                BluetoothService.unregister(this)
-                finish()
-            }
-            BtEvents.EVENT_WRITE -> {
-                Log.d(TAG, "onReceiveMessage: sending board to the enemy")
-                if(!otherPlayerReady){
-                    mIsPlayer1 = true
-                }
-            }
-            BtEvents.EVENT_READ -> {
-                val buffer = (message as Bundle).getByteArray(BtEvents.BYTES) ?: return
-                val byteCnt = message.getInt(BtEvents.BYTE_COUNT)
-                mEnemyBoard = bytesToSquareGrid(buffer, byteCnt, 10)
-                otherPlayerReady = true
-            }
-        }
+    override fun onDestroy() {
+        Log.d(TAG, "onDestroy: called")
+        super.onDestroy()
+        BluetoothService.unregister(mViewModel)
     }
 
     private suspend fun startGameActivity(){
         Log.d(TAG, "startGameActivity():")
 
         val intent = Intent(this, GameActivity::class.java)
-        intent.putExtra(EXTRA_MY_SHIPS, mMyBoard)
-        intent.putExtra(EXTRA_IS_PLAYER_ONE, mIsPlayer1)
+        intent.putExtra(EXTRA_MY_SHIPS, mViewModel.mMyBoardState)
+        intent.putExtra(EXTRA_IS_PLAYER_ONE, mViewModel.mIsPlayer1)
 
-        waitForPlayer()
+        mViewModel.waitForPlayer()
 
-        intent.putExtra(EXTRA_OPPONENT_SHIPS, mEnemyBoard)
+        intent.putExtra(EXTRA_OPPONENT_SHIPS, mViewModel.mEnemyBoardState)
 
-        BluetoothService.unregister(this)
         startActivity(intent)
-    }
-
-    private suspend fun waitForPlayer(){
-        // Wait for the other player to press ready
-        while(!otherPlayerReady){
-            continue
-        }
-    }
-
-    private fun bytesToSquareGrid(buffer: ByteArray, byteCnt: Int, gridSize: Int): Array<Array<Int>>?{
-        if (gridSize * gridSize > byteCnt) {
-            Log.d(TAG, "bytesToGrid: cant turn byteArray of size $byteCnt into a ${gridSize}x$gridSize grid")
-            return null
-        }
-
-        val grid = Array(gridSize) { Array(gridSize) {0} }
-        buffer.forEachIndexed { index, byte ->
-            if (index >= byteCnt) return@forEachIndexed
-            grid[index / 10][index % 10] = byte.toInt()
-        }
-
-        return grid
+        BluetoothService.unregister(mViewModel)
+        finish()
     }
 }

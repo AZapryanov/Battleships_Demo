@@ -8,6 +8,7 @@ class Ship(val size: Int) {
     var hasInvalidPos = false
     var isTouched = false
     var isHorizontal = true
+    var isPlaced = false
 
     fun turn(){
         val tmpRect = Rect()
@@ -31,5 +32,6 @@ class Ship(val size: Int) {
     fun returnToInitPos(){
         rect = Rect(initialPos)
         isHorizontal = true
+        isPlaced = false
     }
 }
