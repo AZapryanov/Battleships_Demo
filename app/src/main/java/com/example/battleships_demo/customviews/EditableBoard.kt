@@ -215,7 +215,7 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
      * My functions
      */
     // Sets board state from ships' rects and returns true if is successful
-    fun finishEditing(): Boolean{
+    fun finishEditing(): Boolean {
         var cnt = 0
         for(ship in mShips)
             if(ship.isPlaced) cnt++
