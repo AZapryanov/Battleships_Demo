@@ -186,6 +186,7 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
                                     bottom = top + ship.rect.height()
                                 }
                                 ship.rect.set(Rect(mTmpRect))
+                                ship.isPlaced = true
                             }
                             value = true
                         }
@@ -213,7 +214,14 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
     /**
      * My functions
      */
-    fun finishEditing(){
+    // Sets board state from ships' rects and returns true if is successful
+    fun finishEditing(): Boolean{
+        var cnt = 0
+        for(ship in mShips)
+            if(ship.isPlaced) cnt++
+        // If not all ships are placed fail
+        if(cnt < 5) return false
+
         // Set the board state according to where the ships are placed
         for(ship in mShips) {
             if (ship.isHorizontal) {
@@ -231,6 +239,7 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
                 }
             }
         }
+        return true
     }
 
 
