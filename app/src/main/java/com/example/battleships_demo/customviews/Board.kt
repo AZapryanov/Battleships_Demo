@@ -87,7 +87,7 @@ open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
         return boardState
     }
 
-    fun getBoardState(): Array<Array<Int>> {
+    fun getState(): Array<Array<Int>> {
         return mBoardState
     }
 }
