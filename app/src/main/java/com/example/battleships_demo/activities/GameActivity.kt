@@ -13,6 +13,8 @@ import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.bluetooth.BtEvents
 import com.example.battleships_demo.viemodels.GameActivityViewModel
 import kotlinx.android.synthetic.main.activity_game.*
+import kotlinx.android.synthetic.main.ship_hit_toast.*
+import kotlinx.android.synthetic.main.successful_attack_toast.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -83,7 +85,7 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
                     Log.d(TAG, "My ships updated with opponent attack.")
                     
                     gameActivityViewModel.myShipsPositionsFromPreviousRound =
-                        cvMyShips.getBoardState()
+                        cvMyShips.getState()
                     mIsEndgame = cvMyShips.checkIfGameHasEnded()
 
                     if (mIsEndgame) {
@@ -95,7 +97,12 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
             mIsNotFirstTurn = true
 
             if (mIsShipHitByOpponent) {
-                Toast.makeText(this, SHIP_HAS_BEEN_HIT_MESSAGE, Toast.LENGTH_SHORT).show()
+//                Toast.makeText(this, SHIP_HAS_BEEN_HIT_MESSAGE, Toast.LENGTH_SHORT).show()
+                Toast(this).apply {
+                    duration = Toast.LENGTH_SHORT
+                    view = layoutInflater.inflate(R.layout.ship_hit_toast, clShipHitToast)
+                    show()
+                }
                 Log.d(TAG, "Message to attack again sent to opponent.")
                 mIsShipHitByOpponent = false
 
@@ -131,7 +138,7 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
                 Log.d(TAG, "My attacks updated after check for hit.")
 
                 gameActivityViewModel.myAttacksPositionsFromPreviousRound =
-                    cvMyAttacks.getBoardState()
+                    cvMyAttacks.getState()
                 mIsEndgame = cvMyAttacks.checkIfGameHasEnded()
 
                 if (mIsEndgame) {
@@ -140,7 +147,12 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
                 } else {
                     cvMyAttacks.resetBoardTouchCounter()
                     mCoordinatesToSend += if (cvMyAttacks.checkIfAttackIsAHit(myAttackCoordinates)) {
-                        Toast.makeText(this, SECOND_ATTACK_AFTER_HIT, Toast.LENGTH_SHORT).show()
+//                        Toast.makeText(this, SECOND_ATTACK_AFTER_HIT, Toast.LENGTH_SHORT).show()
+                        Toast(this).apply {
+                            duration = Toast.LENGTH_SHORT
+                            view = layoutInflater.inflate(R.layout.successful_attack_toast, clSuccessfulAttackToast)
+                            show()
+                        }
                         Log.d(TAG, "My attack was successful, will attack again.")
                         //Gives information to the opponent that my attack has hit one of his ships
                         1
@@ -181,7 +193,7 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
     private fun setViewModelData() {
         gameActivityViewModel.myShipsPositionsFromPreviousRound =
             intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>
-        gameActivityViewModel.myAttacksPositionsFromPreviousRound = cvMyAttacks.getBoardState()
+        gameActivityViewModel.myAttacksPositionsFromPreviousRound = cvMyAttacks.getState()
     }
 
     private fun getExtrasFromIntent() {
