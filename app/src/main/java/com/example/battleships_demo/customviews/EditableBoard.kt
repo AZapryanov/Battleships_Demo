@@ -7,13 +7,12 @@ import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import androidx.core.view.GestureDetectorCompat
-import com.example.battleships_demo.Ship
 
 class EditableBoard(context: Context, attrs: AttributeSet) :
             Board(context, attrs),
             GestureDetector.OnGestureListener {
 
-    companion object{
+    companion object {
         private const val TAG = "EditableBoard"
     }
 
@@ -255,5 +254,39 @@ class EditableBoard(context: Context, attrs: AttributeSet) :
                 if(Rect.intersects(ship.rect, otherShip.rect))
                     ship.hasInvalidPos = true
             }
+    }
+
+    class Ship(val size: Int) {
+        var rect = Rect()
+        var initialPos = Rect()
+        var hasInvalidPos = false
+        var isTouched = false
+        var isHorizontal = true
+        var isPlaced = false
+
+        fun turn(){
+            val tmpRect = Rect()
+            if (isHorizontal){
+                tmpRect.left   = rect.left
+                tmpRect.top    = rect.top
+                tmpRect.right  = rect.left + rect.height()
+                tmpRect.bottom = rect.top + rect.width()
+                rect.set(tmpRect)
+                isHorizontal = false
+            } else {
+                tmpRect.left   = rect.left
+                tmpRect.top    = rect.top
+                tmpRect.right  = rect.left + rect.height()
+                tmpRect.bottom = rect.top + rect.width()
+                rect.set(tmpRect)
+                isHorizontal = true
+            }
+        }
+
+        fun returnToInitPos(){
+            rect = Rect(initialPos)
+            isHorizontal = true
+            isPlaced = false
+        }
     }
 }
