@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.TextView
 import com.example.battleships_demo.R
+import com.example.battleships_demo.databinding.ActivityDeviceListBinding
 
 class DeviceListActivity : AppCompatActivity() {
 
@@ -20,11 +21,14 @@ class DeviceListActivity : AppCompatActivity() {
         const val EXTRA_DEVICE_ADDRESS = "com.example.battleships_demo.device_address"
     }
 
+    private lateinit var binding: ActivityDeviceListBinding
     private lateinit var mBtAdapter: BluetoothAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_device_list)
+        binding = ActivityDeviceListBinding.inflate(layoutInflater)
+        val contentView = binding.root
+        setContentView(contentView)
 
         // In case the user backs out
         setResult(RESULT_CANCELED)

@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.customviews.EditableBoard
+import com.example.battleships_demo.databinding.ActivityPlaceShipsBinding
 import com.example.battleships_demo.viemodels.PlaceShipsViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,13 +27,16 @@ class PlaceShipsActivity : AppCompatActivity() {
         const val EXTRA_IS_PLAYER_ONE = "isPlayerOneOrTwo"
     }
 
+    private lateinit var binding: ActivityPlaceShipsBinding
     private lateinit var mViewModel: PlaceShipsViewModel
     private lateinit var mBoard: EditableBoard
     private var mIsReady = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_place_ships)
+        binding = ActivityPlaceShipsBinding.inflate(layoutInflater)
+        val contentView = binding.root
+        setContentView(contentView)
         Log.d(TAG, "onCreate: Entered")
 
         mViewModel = ViewModelProvider(this)[PlaceShipsViewModel::class.java]

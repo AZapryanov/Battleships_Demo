@@ -8,13 +8,12 @@ import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.bluetooth.BtEvents
+import com.example.battleships_demo.databinding.ActivityGameBinding
+import com.example.battleships_demo.databinding.ShipHitToastBinding
+import com.example.battleships_demo.databinding.SuccessfulAttackToastBinding
 import com.example.battleships_demo.viemodels.GameActivityViewModel
-import kotlinx.android.synthetic.main.activity_game.*
-import kotlinx.android.synthetic.main.ship_hit_toast.*
-import kotlinx.android.synthetic.main.successful_attack_toast.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -47,17 +46,26 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
     private var mIsActivityPaused = false
 
     private lateinit var gameActivityViewModel: GameActivityViewModel
+    private lateinit var binding: ActivityGameBinding
+    private lateinit var shipHitToastBinding: ShipHitToastBinding
+    private lateinit var successfulAttackToastBinding: SuccessfulAttackToastBinding
 
     private var mCoordinatesToSend = ""
     private var mReceivedBluetoothMessage = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_game)
+        binding = ActivityGameBinding.inflate(layoutInflater)
+        val contentView = binding.root
+        setContentView(contentView)
 
         gameActivityViewModel = ViewModelProvider(this)[GameActivityViewModel::class.java]
+
+        shipHitToastBinding = ShipHitToastBinding.inflate(layoutInflater)
+        successfulAttackToastBinding = SuccessfulAttackToastBinding.inflate(layoutInflater)
+
         BluetoothService.register(this)
-        buttonEndTurn.visibility = View.GONE
+        binding.buttonEndTurn.visibility = View.GONE
 
         //The following four functions are executed only one time at the start of the game
         setViewModelData()
@@ -67,26 +75,26 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
 
         mShouldStartMyNextTurn.observe(this, {
             Log.d(TAG, "My turn starts.")
-            cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+            binding.cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
 
             //If one of my ships is hit, the opponent attacks again and I do not enter phase - mark attack
             if (!mIsShipHitByOpponent) {
-                cvMyAttacks.setPhase(PHASE_MARK_ATTACK)
+                binding.cvMyAttacks.setPhase(PHASE_MARK_ATTACK)
             }
 
             if (mIsNotFirstTurn) {
                 //My ships board is not updated with opponent attack if I have to attack again after a successful hit
                 if (!mIsToDoAnotherAttackAfterHit) {
                     //My ships are updated based on the received attack coordinates from the opponent
-                    cvMyShips.updateMyShips(
+                    binding.cvMyShips.updateMyShips(
                         gameActivityViewModel.opponentAttackCoordinates,
                         gameActivityViewModel.myShipsPositionsFromPreviousRound
                     )
                     Log.d(TAG, "My ships updated with opponent attack.")
                     
                     gameActivityViewModel.myShipsPositionsFromPreviousRound =
-                        cvMyShips.getState()
-                    mIsEndgame = cvMyShips.checkIfGameHasEnded()
+                        binding.cvMyShips.getState()
+                    mIsEndgame = binding.cvMyShips.checkIfGameHasEnded()
 
                     if (mIsEndgame) {
                         doEndgameProcedure(DEFEATED_MESSAGE)
@@ -100,7 +108,7 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
 //                Toast.makeText(this, SHIP_HAS_BEEN_HIT_MESSAGE, Toast.LENGTH_SHORT).show()
                 Toast(this).apply {
                     duration = Toast.LENGTH_SHORT
-                    view = layoutInflater.inflate(R.layout.ship_hit_toast, clShipHitToast)
+                    view = shipHitToastBinding.clShipHitToast
                     show()
                 }
                 Log.d(TAG, "Message to attack again sent to opponent.")
@@ -111,26 +119,26 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
 
             } else {
                 if (!mIsEndgame) {
-                    buttonEndTurn.visibility = View.VISIBLE
+                    binding.buttonEndTurn.visibility = View.VISIBLE
                 }
             }
         })
 
-        buttonEndTurn.setOnClickListener {
+        binding.buttonEndTurn.setOnClickListener {
             //Check is an attack has been marked before allowing the End Turn button to be pressed
-            if (cvMyAttacks.getTouchCounter() >= 1) {
+            if (binding.cvMyAttacks.getTouchCounter() >= 1) {
                 Log.d(TAG, "End turn button clicked.")
-                cvMyAttacks.resetBoardTouchCounter()
-                cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-                buttonEndTurn.visibility = View.GONE
+                binding.cvMyAttacks.resetBoardTouchCounter()
+                binding.cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+                binding.buttonEndTurn.visibility = View.GONE
 
                 //Gets the last touch input on the interactive game board
-                val myAttackCoordinates = cvMyAttacks.getLastTouchInput()
+                val myAttackCoordinates = binding.cvMyAttacks.getLastTouchInput()
                 mCoordinatesToSend += myAttackCoordinates[0].toString()
                 mCoordinatesToSend += myAttackCoordinates[1].toString()
 
                 //My attack board is updated based on my attack coordinates and whether it is a hit or miss
-                cvMyAttacks.updateMyAttacks(
+                binding.cvMyAttacks.updateMyAttacks(
                     myAttackCoordinates,
                     gameActivityViewModel.myAttacksPositionsFromPreviousRound
                 )
@@ -138,19 +146,19 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
                 Log.d(TAG, "My attacks updated after check for hit.")
 
                 gameActivityViewModel.myAttacksPositionsFromPreviousRound =
-                    cvMyAttacks.getState()
-                mIsEndgame = cvMyAttacks.checkIfGameHasEnded()
+                    binding.cvMyAttacks.getState()
+                mIsEndgame = binding.cvMyAttacks.checkIfGameHasEnded()
 
                 if (mIsEndgame) {
                     doEndgameProcedure(WINNER_MESSAGE)
 
                 } else {
-                    cvMyAttacks.resetBoardTouchCounter()
-                    mCoordinatesToSend += if (cvMyAttacks.checkIfAttackIsAHit(myAttackCoordinates)) {
+                    binding.cvMyAttacks.resetBoardTouchCounter()
+                    mCoordinatesToSend += if (binding.cvMyAttacks.checkIfAttackIsAHit(myAttackCoordinates)) {
 //                        Toast.makeText(this, SECOND_ATTACK_AFTER_HIT, Toast.LENGTH_SHORT).show()
                         Toast(this).apply {
                             duration = Toast.LENGTH_SHORT
-                            view = layoutInflater.inflate(R.layout.successful_attack_toast, clSuccessfulAttackToast)
+                            view = successfulAttackToastBinding.clSuccessfulAttackToast
                             show()
                         }
                         Log.d(TAG, "My attack was successful, will attack again.")
@@ -193,19 +201,19 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
     private fun setViewModelData() {
         gameActivityViewModel.myShipsPositionsFromPreviousRound =
             intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>
-        gameActivityViewModel.myAttacksPositionsFromPreviousRound = cvMyAttacks.getState()
+        gameActivityViewModel.myAttacksPositionsFromPreviousRound = binding.cvMyAttacks.getState()
     }
 
     private fun getExtrasFromIntent() {
-        cvMyShips.setBoardState(intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>)
-        cvMyAttacks.setOpponentShipsPositions(intent.extras!!.get(PlaceShipsActivity.EXTRA_OPPONENT_SHIPS) as Array<Array<Int>>)
+        binding.cvMyShips.setBoardState(intent.extras!!.get(PlaceShipsActivity.EXTRA_MY_SHIPS) as Array<Array<Int>>)
+        binding.cvMyAttacks.setOpponentShipsPositions(intent.extras!!.get(PlaceShipsActivity.EXTRA_OPPONENT_SHIPS) as Array<Array<Int>>)
         mIsPlayerOne = intent.getBooleanExtra(PlaceShipsActivity.EXTRA_IS_PLAYER_ONE, false)
         Log.d(TAG, "I am player one = $mIsPlayerOne.")
     }
 
     private fun setInitialBoardPhases() {
-        cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-        cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+        binding.cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+        binding.cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
     }
 
     private fun initializePlayers() {
@@ -228,9 +236,9 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
     }
 
     private fun enterStateWaitForOpponentAttack() {
-        cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-        cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-        buttonEndTurn.visibility = View.GONE
+        binding.cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+        binding.cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+        binding.buttonEndTurn.visibility = View.GONE
         startWaitingForOpponentAttack()
     }
 
@@ -280,23 +288,23 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
     private fun doEndgameProcedure(messageToShow: String) {
         //Lock all inputs-------------------------------
         Log.d(TAG, "Game has ended.")
-        cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-        buttonEndTurn.visibility = View.GONE
+        binding.cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+        binding.buttonEndTurn.visibility = View.GONE
         //----------------------------------------------
 
         //Show appropriate pop-up message and toast for Winner or Defeated
         showWinnerOrDefeatedImage(messageToShow)
 
         //The remaining enemy ships are shown if the game is lost
-        cvMyAttacks.visualizeRemainingOpponentShips()
+        binding.cvMyAttacks.visualizeRemainingOpponentShips()
     }
 
     private fun showWinnerOrDefeatedImage(messageToShow: String) {
         if (messageToShow == WINNER_MESSAGE) {
-            ivWinner.visibility = View.VISIBLE
+            binding.ivWinner.visibility = View.VISIBLE
 
         } else if (messageToShow == DEFEATED_MESSAGE) {
-            ivDefeated.visibility = View.VISIBLE
+            binding.ivDefeated.visibility = View.VISIBLE
         }
         Toast.makeText(this, messageToShow, Toast.LENGTH_LONG).show()
     }
@@ -335,8 +343,8 @@ class GameActivity : AppCompatActivity(), BluetoothService.BtListener {
     }
 
     private fun restoreShipsAndAttacksBoardStates() {
-        cvMyAttacks.setBoardState(gameActivityViewModel.myAttacksPositionsFromPreviousRound)
-        cvMyShips.setBoardState(gameActivityViewModel.myShipsPositionsFromPreviousRound)
+        binding.cvMyAttacks.setBoardState(gameActivityViewModel.myAttacksPositionsFromPreviousRound)
+        binding.cvMyShips.setBoardState(gameActivityViewModel.myShipsPositionsFromPreviousRound)
     }
 
     private fun resetGameStateRelatedBooleans() {

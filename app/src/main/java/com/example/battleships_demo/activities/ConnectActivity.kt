@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.example.battleships_demo.R
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.bluetooth.BtEvents
+import com.example.battleships_demo.databinding.ActivityConnectBinding
 
 class ConnectActivity : AppCompatActivity(), BluetoothService.BtListener {
 
@@ -22,6 +23,7 @@ class ConnectActivity : AppCompatActivity(), BluetoothService.BtListener {
     private var mBluetoothAdapter: BluetoothAdapter? = null
 
     private lateinit var mStatusText: TextView
+    private lateinit var binding: ActivityConnectBinding
 
     companion object {
         private const val TAG = "ConnectActivity"
@@ -30,7 +32,9 @@ class ConnectActivity : AppCompatActivity(), BluetoothService.BtListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_connect)
+        binding = ActivityConnectBinding.inflate(layoutInflater)
+        val contentView = binding.root
+        setContentView(contentView)
 
         mStatusText = findViewById(R.id.text_status)
         // Initialize the BluetoothChatService to perform bluetooth connections
