@@ -3,6 +3,8 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Aleksandar Zapryanov/Desktop/Joint_Projects_202112/Battleships_Demo/app/src/main/res/drawable/ic_battleships_logo.xml" value="0.30625" />
+        <entry key="..\:/Users/Aleksandar Zapryanov/Desktop/Joint_Projects_202112/Battleships_Demo/app/src/main/res/drawable/splash_image.xml" value="0.30625" />
         <entry key="..\:/Users/Aleksandar Zapryanov/Desktop/Joint_Projects_202112/Battleships_Demo/app/src/main/res/layout/activity_game.xml" value="0.25" />
         <entry key="..\:/Users/Aleksandar Zapryanov/Desktop/Joint_Projects_202112/Battleships_Demo/app/src/main/res/layout/activity_main.xml" value="0.25769927536231885" />
         <entry key="..\:/Users/Aleksandar Zapryanov/Desktop/Joint_Projects_202112/Battleships_Demo/app/src/main/res/layout/activity_player_one.xml" value="0.2" />

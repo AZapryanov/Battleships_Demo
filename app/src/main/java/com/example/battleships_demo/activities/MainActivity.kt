@@ -9,6 +9,7 @@ import com.example.battleships_demo.R
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setTheme(R.style.Theme_Battleships_Demo)
         setContentView(R.layout.activity_main)
 
         findViewById<Button>(R.id.btn_start_connect_activity).setOnClickListener {
