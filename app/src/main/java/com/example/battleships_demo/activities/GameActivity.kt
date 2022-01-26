@@ -85,6 +85,7 @@ class GameActivity : AppCompatActivity() {
                     }
                 }
             }
+
             gameActivityViewModel.mIsToDoAnotherAttackAfterHit = false
             mIsNotFirstTurn = true
 
@@ -211,13 +212,6 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
-    private fun enterStateWaitForOpponentAttack() {
-        binding.cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-        binding.cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
-        binding.buttonEndTurn.visibility = View.GONE
-        gameActivityViewModel.startWaitingForOpponentAttack()
-    }
-
     private fun doEndgameProcedure(messageToShow: String) {
         //Lock all inputs-------------------------------
         Log.d(TAG, "Game has ended.")
@@ -253,7 +247,15 @@ class GameActivity : AppCompatActivity() {
         } else {
             gameActivityViewModel.startNextTurn()
         }
+
         resetGameStateRelatedBooleans()
+    }
+
+    private fun enterStateWaitForOpponentAttack() {
+        binding.cvMyShips.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+        binding.cvMyAttacks.setPhase(PHASE_TOUCH_INPUTS_LOCKED)
+        binding.buttonEndTurn.visibility = View.GONE
+        gameActivityViewModel.startWaitingForOpponentAttack()
     }
 
     private fun restoreShipsAndAttacksBoardStates() {

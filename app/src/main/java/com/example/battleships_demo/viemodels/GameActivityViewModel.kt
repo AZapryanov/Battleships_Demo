@@ -3,9 +3,9 @@ package com.example.battleships_demo.viemodels
 import android.content.ContentValues.TAG
 import android.os.Bundle
 import android.util.Log
+import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.lifecycleScope
 import com.example.battleships_demo.activities.GameActivity
 import com.example.battleships_demo.bluetooth.BluetoothService
 import com.example.battleships_demo.bluetooth.BtEvents
@@ -29,25 +29,17 @@ class GameActivityViewModel : ViewModel(), BluetoothService.BtListener {
 
     var mIsDisconnected: MutableLiveData<Boolean> = MutableLiveData()
 
-    var myAttacksPositionsFromPreviousRound: Array<Array<Int>>
-    var myShipsPositionsFromPreviousRound: Array<Array<Int>>
-    var mOpponentAttackCoordinates: Array<Int>
-    var mReceivedBluetoothMessage: String
-    var mIsWaitingForOpponentTurn: Boolean
-    var mCoordinatesToSend: String
-    var mIsShipHitByOpponent: Boolean
-    var mIsToDoAnotherAttackAfterHit: Boolean
+    var myAttacksPositionsFromPreviousRound: Array<Array<Int>> = Array(10) { Array(10) { 0 } }
+    var myShipsPositionsFromPreviousRound: Array<Array<Int>> = Array(10) { Array(10) { 0 } }
+    var mOpponentAttackCoordinates: Array<Int> = Array(INITIAL_ARRAY_SIZE) { INITIAL_ARRAY_VALUE }
+    var mCoordinatesToSend: String = ""
+    var mIsWaitingForOpponentTurn: Boolean = false
+    var mIsShipHitByOpponent: Boolean = false
+    var mIsToDoAnotherAttackAfterHit: Boolean = false
+    private var mReceivedBluetoothMessage: String = ""
 
     init {
         mIsDisconnected.value = false
-        myAttacksPositionsFromPreviousRound = Array(10) { Array(10) { 0 } }
-        myShipsPositionsFromPreviousRound = Array(10) { Array(10) { 0 } }
-        mOpponentAttackCoordinates = Array(INITIAL_ARRAY_SIZE) { INITIAL_ARRAY_VALUE }
-        mReceivedBluetoothMessage = ""
-        mIsWaitingForOpponentTurn = false
-        mCoordinatesToSend = ""
-        mIsShipHitByOpponent = false
-        mIsToDoAnotherAttackAfterHit = false
     }
 
     override fun onReceiveEvent(messageType: Int, message: Any?) {
@@ -116,5 +108,4 @@ class GameActivityViewModel : ViewModel(), BluetoothService.BtListener {
     } else {
         mShouldStartMyNextTurn.value = SWAPPABLE_ONE
     }
-
 }
