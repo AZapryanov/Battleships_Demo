@@ -108,4 +108,9 @@ class GameActivityViewModel : ViewModel(), BluetoothService.BtListener {
     } else {
         mShouldStartMyNextTurn.value = SWAPPABLE_ONE
     }
+
+    // Used for testing
+    fun setMReceivedBluetoothMessage(value: String) {
+        mReceivedBluetoothMessage = value
+    }
 }
