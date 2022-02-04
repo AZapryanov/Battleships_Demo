@@ -1,11 +1,9 @@
 package com.example.battleships_demo.viemodels
 
-
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.Rule
-
 import org.junit.Test
 import org.junit.rules.TestRule
 
@@ -21,39 +19,26 @@ class GameActivityViewModelTest {
     }
 
     @Test
-    fun `if value is null should become 2`() {
+    fun triggerForNextTurnWorksCorrectlyWithInitialValue() {
         gameActivityViewModel.mShouldStartMyNextTurn.value = null
         gameActivityViewModel.startNextTurn()
         val result = gameActivityViewModel.mShouldStartMyNextTurn.value
-        assertThat(result).isEqualTo(2)
+        Truth.assertThat(result).isEqualTo(GameActivityViewModel.SWAPPABLE_TWO)
     }
 
     @Test
-    fun `if value is 1 should become 2`() {
-        gameActivityViewModel.mShouldStartMyNextTurn.value = 1
+    fun triggerForNextTurnWorksCorrectlyWithFirstSwappableValue() {
+        gameActivityViewModel.mShouldStartMyNextTurn.value = GameActivityViewModel.SWAPPABLE_ONE
         gameActivityViewModel.startNextTurn()
         val result = gameActivityViewModel.mShouldStartMyNextTurn.value
-        assertThat(result).isEqualTo(2)
+        Truth.assertThat(result).isEqualTo(GameActivityViewModel.SWAPPABLE_TWO)
     }
 
     @Test
-    fun `if value is 2 should become 1`() {
-        gameActivityViewModel.mShouldStartMyNextTurn.value = 2
+    fun triggerForNextTurnWorksCorrectlyWithSecondSwappableValue() {
+        gameActivityViewModel.mShouldStartMyNextTurn.value = GameActivityViewModel.SWAPPABLE_TWO
         gameActivityViewModel.startNextTurn()
         val result = gameActivityViewModel.mShouldStartMyNextTurn.value
-        assertThat(result).isEqualTo(1)
+        Truth.assertThat(result).isEqualTo(GameActivityViewModel.SWAPPABLE_ONE)
     }
-
-    @Test
-    fun `if message is specified should change boolean to true`() {
-        var value = ""
-        value += 0
-        value += 0
-        value += 1
-        gameActivityViewModel.startWaitingForOpponentAttack()
-        gameActivityViewModel.setMReceivedBluetoothMessage(value)
-        val result = gameActivityViewModel.mIsShipHitByOpponent
-        assertThat(result).isEqualTo(true)
-    }
-
 }

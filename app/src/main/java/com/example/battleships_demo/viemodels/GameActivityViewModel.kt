@@ -19,8 +19,8 @@ class GameActivityViewModel : ViewModel(), BluetoothService.BtListener {
     companion object {
         private const val INITIAL_ARRAY_VALUE = 15
         private const val INITIAL_ARRAY_SIZE = 3
-        private const val SWAPPABLE_ONE = 1
-        private const val SWAPPABLE_TWO = 2
+        const val SWAPPABLE_ONE = 1
+        const val SWAPPABLE_TWO = 2
     }
 
     val mShouldStartMyNextTurn: MutableLiveData<Int> by lazy {
@@ -107,10 +107,5 @@ class GameActivityViewModel : ViewModel(), BluetoothService.BtListener {
         mShouldStartMyNextTurn.value = SWAPPABLE_TWO
     } else {
         mShouldStartMyNextTurn.value = SWAPPABLE_ONE
-    }
-
-    // Used for testing
-    fun setMReceivedBluetoothMessage(value: String) {
-        mReceivedBluetoothMessage = value
     }
 }

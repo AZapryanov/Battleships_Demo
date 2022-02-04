@@ -4,18 +4,17 @@ import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.MotionEvent
-import com.example.battleships_demo.activities.GameActivity
 
-class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, attrs) {
+class InteractiveBoard(context: Context, attrs: AttributeSet?) : Board(context, attrs) {
     companion object {
         private const val TAG = "InteractiveBoard"
         private const val DRAW_CROSS = "drawCross"
         private const val DRAW_RED_SHIP_PART_WITH_CROSS = "drawRedShipPartWithCross"
         private const val NUMBER_OF_DESTROYED_SHIPS_FOR_ENDGAME = 17
-        private const val EMPTY_BOX = 0
-        private const val SHIP_PART = 1
-        private const val CROSS = 2
-        private const val SHIP_PART_HIT = 3
+        const val EMPTY_BOX = 0
+        const val SHIP_PART = 1
+        const val CROSS = 2
+        const val SHIP_PART_HIT = 3
     }
 
     private var mOpponentShipsPositions = Array(mBoardSize) { Array(mBoardSize) { 0 } }
@@ -131,11 +130,7 @@ class InteractiveBoard(context: Context, attrs: AttributeSet) : Board(context, a
     }
 
     fun setBoardState(inputState: Array<Array<Int>>) {
-        for (i in 0 until mBoardSize) {
-            for (j in 0 until mBoardSize) {
-                mBoardState[i][j] = inputState[i][j]
-            }
-        }
+        mBoardState = inputState
         invalidate()
     }
 

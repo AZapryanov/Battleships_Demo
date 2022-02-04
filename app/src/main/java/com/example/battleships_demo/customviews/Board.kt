@@ -6,8 +6,8 @@ import android.util.AttributeSet
 import android.view.View
 import com.example.battleships_demo.R
 
-open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
-    protected var mBoardSize: Int
+open class Board(context: Context, attrs: AttributeSet?) : View(context, attrs) {
+    var mBoardSize: Int
     protected var mCellWidth: Int = 0
     protected var mCellHeight: Int = 0
 
@@ -75,16 +75,6 @@ open class Board(context: Context, attrs: AttributeSet) : View(context, attrs) {
                 canvas?.drawRect(mCellRect, mDefRectPaint)
             }
         }
-    }
-
-    fun getBoardStateAsString(): String {
-        var boardState = ""
-        for (i in 0 until mBoardSize) {
-            for (j in 0 until mBoardSize) {
-                boardState += mBoardState[i][j].toString()
-            }
-        }
-        return boardState
     }
 
     fun getState(): Array<Array<Int>> {
